@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/base64"
+	"flag"
 	"fmt"
 	"license/public"
 	"os"
@@ -156,6 +157,8 @@ func main() {
 		expiresAt   int64
 		machineID   string
 	)
+
+	flag.Parse()
 
 	inputReader = bufio.NewReader(os.Stdin)
 

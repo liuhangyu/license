@@ -95,6 +95,8 @@ func main() {
 		machineID string
 	)
 
+	flag.Parse()
+
 	//验证签名实例
 	alg, err := public.GetNonEquAlgorthm(nil, []byte(public.ECDSA_PUBLICKEY))
 	if err != nil {
