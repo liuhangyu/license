@@ -1,4 +1,21 @@
 # switch license
+```
+1.
+根目录make生成激活程序
+licensemgr linux平台
+licensemgr.exe win平台
+
+2.获取机器码以及license.dat安装程序
+进入license/tools/cli 
+go build
+生成cli
+
+3.链接库
+进入license/tools/linklib 
+运行make
+生成libplugin.so  libshared.go  libshared.h
+
+```
 
 ### licensemgr是生成激活码程序(目录位置licensemgr)
 ```
@@ -60,3 +77,36 @@ license/tools/chkLicense/shard/main.c
 
 ```
 
+### 库中接口
+```
+libplugin.so
+libshared.so
+
+
+1.验证license
+入参:
+license.dat文件路径
+产品名
+出参:
+成功"OK"
+失败msg
+string VerifyLicense(string,string)
+
+
+2.读取license.dat配置
+入参:
+license.dat文件路径
+出参:
+成功json格式license文件内容
+失败"FALT"
+string ReadLicnese(string)
+
+3.获取过期时间
+入参:
+license.dat文件路径
+出参:
+0已过期
+-1失败
+>0 剩余时间(剩余未过期的秒数)
+int64 GetExpireSec(string)
+```
