@@ -22,9 +22,9 @@ go build
 licensemgr是生成激活码程序,需要输入产品,过期时间,机器码
 ```
 
-### cli(目录位置licensemgr/tools/cli)
+### cli获取机器码以及license.dat安装程序(目录位置licensemgr/tools/cli)
 ```
-cli是安装程序,其中第一步获取机器码,下一步输入激活码
+cli获取机器码以及license.dat安装程序,其中第一步获取机器码,下一步输入激活码
 ```
 
 
