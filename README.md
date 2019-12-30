@@ -1,4 +1,4 @@
-# license
+# switch license
 
 ### licensemgr是生成激活码程序(目录位置licensemgr)
 ```
