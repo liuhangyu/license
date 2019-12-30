@@ -27,3 +27,36 @@ chkshard java测试license.dat程序
 输入参数如:
 ./chkshard  "../cli/license.dat"  "switch-directory-chain" "../linklib/libshared.so"
 ```
+
+### go程序对接(目录链,switch)
+```
+第一步:
+进入license/tools/linklib目录
+
+第二步:
+make plugin
+生成libplugin.so插件
+
+第三步:
+在go程序中使用libplugin.so
+请查看:
+license/tools/chkLicense/plugin/main.go 
+```
+
+
+### java,C程序对接(目录链,switch)
+```
+第一步:
+进入license/tools/linklib目录
+
+第二步:
+make shard
+生成libshared.h libshared.so
+
+第三步:
+在C程序中使用libshared.so
+请查看:
+license/tools/chkLicense/shard/main.c
+
+```
+
