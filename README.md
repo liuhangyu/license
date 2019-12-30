@@ -1,8 +1,8 @@
-# licenseMgr
+# license
 
-### licensemgr程序是生成激活码程序(目录位置licensemgr)
+### licensemgr是生成激活码程序(目录位置licensemgr)
 ```
-licensemgr程序是生成激活码程序,需要输入产品,过期时间,机器码
+licensemgr是生成激活码程序,需要输入产品,过期时间,机器码
 ```
 
 ### cli(目录位置licensemgr/tools/cli)
