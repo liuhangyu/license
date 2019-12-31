@@ -61,7 +61,7 @@ license/tools/chkLicense/plugin/main.go
 ```
 
 
-### java,C程序对接(目录链,switch)
+### java,C程序对接(数易通)
 ```
 第一步:
 进入license/tools/linklib目录
@@ -77,7 +77,7 @@ license/tools/chkLicense/shard/main.c
 
 ```
 
-### 库中接口
+### 库中接口(具体数值类型根据各语言设定而不同)
 ```
 libplugin.so
 libshared.so
