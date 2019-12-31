@@ -1,13 +1,13 @@
 package public
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -54,6 +54,35 @@ func ReadFStabFile(filePath string) ([]byte, error) {
 	}
 
 	return fstabText, nil
+}
+
+//降低数字串长度
+func Sum(data []byte) string {
+	var (
+		sum    uint64
+		length int = len(data)
+		index  int
+	)
+
+	//以32位求和
+	for length >= 4 {
+		sum += uint64(data[index])<<24 + uint64(data[index+1])<<16 + uint64(data[index+2])<<8 + uint64(data[index+3])
+		index += 4
+		length -= 4
+	}
+
+	switch length {
+	case 3:
+		sum += uint64(data[index])<<16 + uint64(data[index+1])<<8 + uint64(data[index+2])
+	case 2:
+		sum += uint64(data[index])<<8 + uint64(data[index+1])
+	case 1:
+		sum += uint64(data[index])
+	case 0:
+		break
+	}
+
+	return strconv.FormatUint(sum, 16)
 }
 
 /*
@@ -129,7 +158,10 @@ func GetUniqueMachineID() (string, error) {
 				if err != nil {
 					return "", err
 				}
-				return base64.StdEncoding.EncodeToString(encByte), nil
+
+				return Sum(encByte), nil
+				//降低运维手写复杂度
+				//return base64.StdEncoding.EncodeToString(encByte), nil
 			}
 
 			return "", fmt.Errorf("%s", "failed to get machine id")
@@ -181,7 +213,10 @@ func GetUniqueMachineID() (string, error) {
 		if err != nil {
 			return "", err
 		}
-		return base64.StdEncoding.EncodeToString(encByte), nil
+
+		return Sum(encByte), nil
+		//降低运维手写复杂度
+		// return base64.StdEncoding.EncodeToString(encByte), nil
 	}
 
 	return "", fmt.Errorf("%s", "get machine id abort")
