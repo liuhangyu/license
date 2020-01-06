@@ -2,10 +2,10 @@ package main
 
 import (
 	"bufio"
+	"code.uni-ledger.com/switch/license/public"
 	"encoding/base64"
 	"flag"
 	"fmt"
-	"license/public"
 	"os"
 	"strings"
 )

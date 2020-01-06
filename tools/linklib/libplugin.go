@@ -2,10 +2,10 @@ package main
 
 import "C"
 import (
+	"code.uni-ledger.com/switch/license/public"
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"license/public"
 )
 
 const (

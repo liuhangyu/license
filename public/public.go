@@ -1,6 +1,8 @@
 package public
 
-import uuid "github.com/satori/go.uuid"
+import (
+	uuid "code.uni-ledger.com/switch/license/public/uuid"
+)
 
 func GetUUID() string {
 	return uuid.NewV4().String()
