@@ -16,7 +16,7 @@ var (
 
 func ShowMachine() (string, error) {
 	fmt.Printf("%s\n", "机器码是:")
-	machineID, err := public.GetUniqueMachineID()
+	machineID, err := public.GetMachineID()
 	if err != nil {
 		return "", err
 	}

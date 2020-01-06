@@ -55,7 +55,7 @@ func VerifyLicense(licenseFilePath string, productName string) *C.char {
 		}
 
 		//获取机器ID
-		machineID, err := public.GetUniqueMachineID()
+		machineID, err := public.GetMachineID()
 		if err != nil {
 			mErr = err
 			break

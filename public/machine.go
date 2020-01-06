@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"os"
 	"os/exec"
 	"sort"
@@ -86,34 +87,34 @@ func Sum(data []byte) string {
 }
 
 /*
-GetUniqueMachineID 获取机器ID
-获取硬盘分区UUID
+获取文件系统类型等信息
 */
-func GetUniqueMachineID() (string, error) {
+func GetFSInfo() ([]string, error) {
+	var (
+		fsInfoList []string
+	)
+
 	cmdPath, err := CheckCmdExists(FSTabCommand)
 	if err == nil {
-		//存在blkid命令
-		//获取硬盘分区UUID
+		//存在blkid命令 获取硬盘中文件系统的类型以及UUID
 		cmd := exec.Command(cmdPath)
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
 		defer stdout.Close()
 		if err := cmd.Start(); err != nil {
-			return "", err
+			return nil, err
 		}
 
 		opBytes, err := ioutil.ReadAll(stdout)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
-
 		lines := strings.Split(string(opBytes), "\n")
-		if len(lines) > 0 {
-			var preCodeList []string
 
+		if len(opBytes) > 0 && len(lines) > 0 {
 			for i := 0; i < len(lines); i++ {
 				oneLine := strings.TrimSpace(lines[i])
 				if oneLine == "" {
@@ -125,77 +126,71 @@ func GetUniqueMachineID() (string, error) {
 					spaceInd := strings.Index(oneLine[ind:], " ")
 					if ind != -1 && spaceInd != -1 && ind+6 < len(oneLine) {
 						oneLine = oneLine[ind+6 : spaceInd+ind-1]
-						preCodeList = append(preCodeList, oneLine)
+						fsInfoList = append(fsInfoList, oneLine)
 					}
 				} else if strings.Count(oneLine, "ext3") >= 1 {
 					ind := strings.Index(oneLine, "UUID=")
 					spaceInd := strings.Index(oneLine[ind:], " ")
 					if ind != -1 && spaceInd != -1 && ind+6 < len(oneLine) {
 						oneLine = oneLine[ind+6 : spaceInd+ind-1]
-						preCodeList = append(preCodeList, oneLine)
+						fsInfoList = append(fsInfoList, oneLine)
 					}
 				} else if strings.Count(oneLine, "ext4") >= 1 {
 					ind := strings.Index(oneLine, "UUID=")
 					spaceInd := strings.Index(oneLine[ind:], " ")
 					if ind != -1 && spaceInd != -1 && ind+6 < len(oneLine) {
 						oneLine = oneLine[ind+6 : spaceInd+ind-1]
-						preCodeList = append(preCodeList, oneLine)
+						fsInfoList = append(fsInfoList, oneLine)
 					}
 				}
 			}
 
-			// // // test
-			// fmt.Println(len(preCodeList))
-			// for n := 0; n < len(preCodeList); n++ {
-			// 	fmt.Println(n, preCodeList[n])
+			// // //test
+			// fmt.Println("preCodeList len=", len(fsInfoList))
+			// for n := 0; n < len(fsInfoList); n++ {
+			// 	fmt.Println(n, fsInfoList[n])
 			// }
 
-			if len(preCodeList) > 0 {
+			if len(fsInfoList) > 0 {
 				//排序字符串
-				sort.Strings(preCodeList)
-				//编码
-				encByte, err := json.Marshal(preCodeList)
-				if err != nil {
-					return "", err
-				}
-
-				return Sum(encByte), nil
-				//降低运维手写复杂度
-				//return base64.StdEncoding.EncodeToString(encByte), nil
+				sort.Strings(fsInfoList)
+				return fsInfoList, nil
 			}
 
-			return "", fmt.Errorf("%s", "failed to get machine id")
+			return nil, fmt.Errorf("%s", "get system file info failed from command")
 		}
 	}
 
 	fsContent, err := ReadFStabFile(FSTabFile)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	var fsUUIDList []string
 	lines := strings.Split(string(fsContent), "\n")
 	for i := 0; i < len(lines); i++ {
 		if lines[i] == "" || (len(lines[i]) >= 1 && lines[i][0] == '#') {
 			continue
 		}
 
-		// // test
+		// //test
 		// for i, v := range strings.Fields(lines[i]) {
 		// 	fmt.Println(i, v)
 		// }
 		if len(strings.Fields(lines[i])) == 6 {
 			if strings.Fields(lines[i])[2] == "xfs" {
-				if len(strings.Fields(lines[i])[0]) > 5 {
-					fsUUIDList = append(fsUUIDList, strings.Fields(lines[i])[0][5:])
+				uuid := strings.Fields(lines[i])[0]
+				if len(uuid) > 5 && strings.HasPrefix(uuid, "UUID=") {
+					fsInfoList = append(fsInfoList, strings.Fields(lines[i])[0][5:])
 				}
 			} else if strings.Fields(lines[i])[2] == "ext3" {
-				if len(strings.Fields(lines[i])[0]) > 5 {
-					fsUUIDList = append(fsUUIDList, strings.Fields(lines[i])[0][5:])
+				uuid := strings.Fields(lines[i])[0]
+				if len(uuid) > 5 && strings.HasPrefix(uuid, "UUID=") {
+					fsInfoList = append(fsInfoList, strings.Fields(lines[i])[0][5:])
 				}
 			} else if strings.Fields(lines[i])[2] == "ext4" {
-				if len(strings.Fields(lines[i])[0]) > 5 {
-					fsUUIDList = append(fsUUIDList, strings.Fields(lines[i])[0][5:])
+				uuid := strings.Fields(lines[i])[0]
+				if len(uuid) > 5 && strings.HasPrefix(uuid, "UUID=") {
+					fsInfoList = append(fsInfoList, strings.Fields(lines[i])[0][5:])
 				}
 			}
 		}
@@ -205,19 +200,73 @@ func GetUniqueMachineID() (string, error) {
 	// 	fmt.Println(fsUUIDList[m])
 	// }
 
-	if len(fsUUIDList) > 0 {
+	if len(fsInfoList) > 0 {
 		//排序字符串
-		sort.Strings(fsUUIDList)
-		//编码
-		encByte, err := json.Marshal(fsUUIDList)
-		if err != nil {
-			return "", err
-		}
-
-		return Sum(encByte), nil
-		//降低运维手写复杂度
-		// return base64.StdEncoding.EncodeToString(encByte), nil
+		sort.Strings(fsInfoList)
+		return fsInfoList, nil
 	}
 
-	return "", fmt.Errorf("%s", "get machine id abort")
+	return nil, fmt.Errorf("%s", "get system file info failed from file")
+}
+
+//获取网卡信息
+func GetHardwareAddr() ([]string, error) {
+	var (
+		hardAddrList []string
+	)
+
+	interfaces, err := net.Interfaces()
+	if err == nil {
+		for _, iface := range interfaces {
+			if len(iface.HardwareAddr) >= 6 {
+				if strings.HasPrefix(iface.Name, "eno") ||
+					strings.HasPrefix(iface.Name, "ens") ||
+					strings.HasPrefix(iface.Name, "enp") ||
+					strings.HasPrefix(iface.Name, "wl") ||
+					strings.HasPrefix(iface.Name, "ww") ||
+					strings.HasPrefix(iface.Name, "eth") {
+					////test
+					// fmt.Println("HardwareAddr", iface.Name, iface.HardwareAddr.String())
+					hardAddrList = append(hardAddrList, iface.HardwareAddr.String())
+				}
+			}
+		}
+	} else {
+		return nil, err
+	}
+
+	if len(hardAddrList) > 0 {
+		sort.Strings(hardAddrList)
+	}
+	return hardAddrList, nil
+}
+
+/*
+GetMachineID 获取机器ID (文件类型和网卡地址)
+*/
+func GetMachineID() (string, error) {
+	var (
+		MachineIDList []string
+	)
+
+	fsInfoList, err := GetFSInfo()
+	if err != nil {
+		return "", err
+	}
+	MachineIDList = append(MachineIDList, fsInfoList...)
+
+	hardAddrList, err := GetHardwareAddr()
+	if err != nil {
+		return "", err
+	}
+	MachineIDList = append(MachineIDList, hardAddrList...)
+
+	//编码
+	encByte, err := json.Marshal(MachineIDList)
+	if err != nil {
+		return "", err
+	}
+
+	//降低长度
+	return Sum(encByte), nil
 }
