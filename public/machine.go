@@ -264,7 +264,7 @@ func GetMachineID() (string, error) {
 	}
 	MachineIDList = append(MachineIDList, hardAddrList...)
 
-	fmt.Println(MachineIDList)
+	// fmt.Println(MachineIDList)
 	//编码
 	encByte, err := json.Marshal(MachineIDList)
 	if err != nil {
