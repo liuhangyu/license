@@ -126,21 +126,21 @@ func GetFSInfo() ([]string, error) {
 					spaceInd := strings.Index(oneLine[ind:], " ")
 					if ind != -1 && spaceInd != -1 && ind+6 < len(oneLine) {
 						oneLine = oneLine[ind+6 : spaceInd+ind-1]
-						fsInfoList = append(fsInfoList, oneLine)
+						fsInfoList = append(fsInfoList, strings.Replace(oneLine, "-", "", -1))
 					}
 				} else if strings.Count(oneLine, "ext3") >= 1 {
 					ind := strings.Index(oneLine, "UUID=")
 					spaceInd := strings.Index(oneLine[ind:], " ")
 					if ind != -1 && spaceInd != -1 && ind+6 < len(oneLine) {
 						oneLine = oneLine[ind+6 : spaceInd+ind-1]
-						fsInfoList = append(fsInfoList, oneLine)
+						fsInfoList = append(fsInfoList, strings.Replace(oneLine, "-", "", -1))
 					}
 				} else if strings.Count(oneLine, "ext4") >= 1 {
 					ind := strings.Index(oneLine, "UUID=")
 					spaceInd := strings.Index(oneLine[ind:], " ")
 					if ind != -1 && spaceInd != -1 && ind+6 < len(oneLine) {
 						oneLine = oneLine[ind+6 : spaceInd+ind-1]
-						fsInfoList = append(fsInfoList, oneLine)
+						fsInfoList = append(fsInfoList, strings.Replace(oneLine, "-", "", -1))
 					}
 				}
 			}
@@ -180,17 +180,20 @@ func GetFSInfo() ([]string, error) {
 			if strings.Fields(lines[i])[2] == "xfs" {
 				uuid := strings.Fields(lines[i])[0]
 				if len(uuid) > 5 && strings.HasPrefix(uuid, "UUID=") {
-					fsInfoList = append(fsInfoList, strings.Fields(lines[i])[0][5:])
+					uuid = strings.Fields(lines[i])[0][5:]
+					fsInfoList = append(fsInfoList, strings.Replace(uuid, "-", "", -1))
 				}
 			} else if strings.Fields(lines[i])[2] == "ext3" {
 				uuid := strings.Fields(lines[i])[0]
 				if len(uuid) > 5 && strings.HasPrefix(uuid, "UUID=") {
-					fsInfoList = append(fsInfoList, strings.Fields(lines[i])[0][5:])
+					uuid = strings.Fields(lines[i])[0][5:]
+					fsInfoList = append(fsInfoList, strings.Replace(uuid, "-", "", -1))
 				}
 			} else if strings.Fields(lines[i])[2] == "ext4" {
 				uuid := strings.Fields(lines[i])[0]
 				if len(uuid) > 5 && strings.HasPrefix(uuid, "UUID=") {
-					fsInfoList = append(fsInfoList, strings.Fields(lines[i])[0][5:])
+					uuid = strings.Fields(lines[i])[0][5:]
+					fsInfoList = append(fsInfoList, strings.Replace(uuid, "-", "", -1))
 				}
 			}
 		}
@@ -227,7 +230,7 @@ func GetHardwareAddr() ([]string, error) {
 					strings.HasPrefix(iface.Name, "eth") {
 					////test
 					// fmt.Println("HardwareAddr", iface.Name, iface.HardwareAddr.String())
-					hardAddrList = append(hardAddrList, iface.HardwareAddr.String())
+					hardAddrList = append(hardAddrList, strings.Replace(iface.HardwareAddr.String(), ":", "", -1)) //剔除冒号
 				}
 			}
 		}
@@ -261,6 +264,7 @@ func GetMachineID() (string, error) {
 	}
 	MachineIDList = append(MachineIDList, hardAddrList...)
 
+	fmt.Println(MachineIDList)
 	//编码
 	encByte, err := json.Marshal(MachineIDList)
 	if err != nil {
