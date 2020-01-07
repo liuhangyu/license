@@ -10,7 +10,7 @@ import (
 
 const (
 	LinkLibVersion      = 1            //eq public.CONFIGVERSION
-	LicenseConfigVerTag = "LiConfigV1" //strings -a libplugin.so | grep LiConfig #查看版本
+	LicenseConfigVerTag = "LiConfigV1" //LiConfigV1,LiConfigV2,...  #strings -a libplugin.so | grep LiConfig #查看版本
 )
 
 //export LicenseConfigVer
