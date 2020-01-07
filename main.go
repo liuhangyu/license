@@ -58,13 +58,17 @@ func SelectProduct() (string, error) {
 
 	input, err := inputReader.ReadString('\n')
 	if err != nil {
-		return "", err
+		os.Exit(0)
 	}
 	defer inputReader.Reset(os.Stdin)
 
 	inputString := strings.TrimSpace(input)
 
 	if inputString != "" {
+		if strings.HasPrefix(inputString, "q") {
+			os.Exit(0)
+		}
+
 		index, err = strconv.Atoi(inputString)
 		if err != nil {
 			return "", err
@@ -99,6 +103,10 @@ func InputExpiresTime() (int64, error) {
 	inputString := strings.TrimSpace(input)
 
 	if inputString != "" {
+		if strings.HasPrefix(inputString, "q") {
+			os.Exit(0)
+		}
+
 		days, err := strconv.ParseInt(inputString, 10, 64)
 		if err != nil {
 			return 0, err
@@ -131,6 +139,10 @@ func InputMachineID() (string, error) {
 	inputString := strings.TrimSpace(input)
 
 	if inputString != "" {
+		if strings.HasPrefix(inputString, "q") {
+			os.Exit(0)
+		}
+
 		fmt.Println()
 		fmt.Printf("你输入的机器ID是: %s\n", inputString)
 		fmt.Println()
