@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -165,6 +164,31 @@ func ShowActiveCode(dir, fileName, uuid string) {
 	// fmt.Println(string(licenseActive))
 }
 
+func IsQuit() bool {
+	input, err := inputReader.ReadString('\n')
+	if err != nil {
+		return false
+	}
+	defer inputReader.Reset(os.Stdin)
+
+	inputString := strings.TrimSpace(input)
+
+	if inputString != "" {
+		if strings.HasPrefix(inputString, "q") {
+			os.Exit(0)
+		}
+	}
+	return true
+}
+
+func init() {
+	flag.Usage = usage
+}
+
+func usage() {
+	fmt.Println("input 'quit' or 'q' to exit the program")
+}
+
 func main() {
 	var (
 		err         error
@@ -174,8 +198,6 @@ func main() {
 	)
 
 	flag.Parse()
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, os.Kill)
 
 	inputReader = bufio.NewReader(os.Stdin)
 
@@ -251,5 +273,8 @@ func main() {
 	}
 
 	ShowActiveCode(dir, fileName, licenseIns.LicenseUUID)
-	<-c //quit
+
+	for {
+		IsQuit()
+	}
 }
