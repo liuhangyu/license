@@ -2,15 +2,17 @@ package main
 
 import (
 	"bufio"
-	"code.uni-ledger.com/switch/license/public"
 	"encoding/base64"
 	"flag"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
+
+	"code.uni-ledger.com/switch/license/public"
 )
 
 const (
@@ -137,8 +139,9 @@ func InputMachineID() (string, error) {
 	return inputString, nil
 }
 
-func ShowActiveCode(dir, fileName string) {
-	fmt.Printf("%s\n", "激活码是:")
+func ShowActiveCode(dir, fileName, uuid string) {
+	fmt.Printf("序号:%s \n", uuid)
+	fmt.Printf("\n%s\n", "激活码是:")
 	readPath := filepath.Join(dir, fileName)
 	licenseActive, err := public.ReadLicensePem(readPath)
 	if err != nil {
@@ -159,6 +162,8 @@ func main() {
 	)
 
 	flag.Parse()
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, os.Kill)
 
 	inputReader = bufio.NewReader(os.Stdin)
 
@@ -233,5 +238,6 @@ func main() {
 		return
 	}
 
-	ShowActiveCode(dir, fileName)
+	ShowActiveCode(dir, fileName, licenseIns.LicenseUUID)
+	<-c //quit
 }

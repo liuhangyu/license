@@ -9,8 +9,15 @@ import (
 )
 
 const (
-	LinkLibVersion = 1 //eq public.CONFIGVERSION
+	LinkLibVersion      = 1            //eq public.CONFIGVERSION
+	LicenseConfigVerTag = "LiConfigV1" //strings -a libplugin.so | grep LiConfig #查看版本
 )
+
+//export LicenseConfigVer
+func LicenseConfigVer() string {
+	fmt.Printf("license config version", LicenseConfigVerTag)
+	return LicenseConfigVerTag
+}
 
 //export VerifyLicense
 func VerifyLicense(licenseFilePath string, productName string) string {
@@ -151,7 +158,7 @@ func GetExpireSec(licenseFilePath string) int64 {
 }
 
 func main() {
-
+	return
 }
 
 //https://studygolang.com/articles/13646
