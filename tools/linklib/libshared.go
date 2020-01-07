@@ -32,7 +32,7 @@ func init() {
 	if err != nil {
 		os.Exit(0)
 	}
-	errLog = log.New(logFile, "[shared]", log.LstdFlags|log.Lshortfile|log.LUTC)
+	errLog = log.New(logFile, "[shared]", log.LstdFlags|log.Lshortfile|log.LstdFlags)
 	return
 }
 
