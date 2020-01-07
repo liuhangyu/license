@@ -232,7 +232,7 @@ func main() {
 	dir := "./db"
 	// fileName := "license.dat"
 	fileName := strings.Join([]string{"license", licenseIns.LicenseUUID, "dat"}, ".")
-	err = public.SaveLicensePem(dir, fileName, licenseString, licenseIns.LicenseUUID, productName)
+	err = public.SaveLicensePem(dir, fileName, licenseString, licenseIns.LicenseUUID, productName, licenseIns.GetEndTime())
 	if err != nil {
 		fmt.Println(err.Error())
 		return

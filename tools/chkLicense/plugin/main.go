@@ -14,8 +14,8 @@ var (
 )
 
 func init() {
-	flag.StringVar(&l, "l", "../../cli/license.dat", "license.dat file path")
-	flag.StringVar(&lib, "lib", "../../linklib/libplugin.so", "libauth.so file path")
+	flag.StringVar(&l, "l", "../cli", "license.dat directory path")
+	flag.StringVar(&lib, "lib", "../linklib/libplugin.so", "libauth.so file path")
 	flag.StringVar(&p, "p", "switch-directory-chain", "product name ")
 	flag.Usage = usage
 }
@@ -59,9 +59,9 @@ func main() {
 			return
 		}
 
-		ret := VerifyLicenseFunc.(func(string, string) string)(l, p)
-		if ret != "OK" {
-			fmt.Println(ret)
+		ret := VerifyLicenseFunc.(func(string, string) int)(l, p)
+		if ret == -1 {
+			fmt.Println("验证失败")
 			return
 		}
 		fmt.Println("验证成功")
@@ -75,7 +75,7 @@ func main() {
 			return
 		}
 
-		ret := ReadLicneseFunc.(func(string) string)(l)
+		ret := ReadLicneseFunc.(func(string, string) string)(l, p)
 		if ret == "FAIL" {
 			fmt.Println(ret)
 			return
@@ -99,11 +99,11 @@ func main() {
 			return
 		}
 
-		willExpireSec := GetExpireSecFunc.(func(string) int64)(l)
+		willExpireSec := GetExpireSecFunc.(func(string, string) int64)(l, p)
 		if willExpireSec == -1 {
 			fmt.Println("fail")
 			return
 		}
-		fmt.Println(willExpireSec)
+		fmt.Println(GetExpireSecFunc, willExpireSec)
 	}
 }

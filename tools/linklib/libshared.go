@@ -2,16 +2,170 @@ package main
 
 import "C"
 import (
-	"code.uni-ledger.com/switch/license/public"
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
+	"log"
+	"os"
+	"path"
+	"sync"
+
+	"code.uni-ledger.com/switch/license/public"
+	"github.com/fsnotify/fsnotify"
 )
 
 const (
 	LinkLibVersion      = 1            //eq public.CONFIGVERSION
 	LicenseConfigVerTag = "LiConfigV1" //LiConfigV1,LiConfigV2,...  #strings -a libplugin.so | grep LiConfig #查看版本
+	LiceseFileName      = "license.dat"
 )
+
+var (
+	once           sync.Once
+	licenseContent []byte
+	isValidLicense bool
+	errLog         *log.Logger
+)
+
+func init() {
+	logFile, err := os.OpenFile("./license.log", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+		os.Exit(0)
+	}
+	errLog = log.New(logFile, "[shared]", log.LstdFlags|log.Lshortfile|log.LUTC)
+	return
+}
+
+func startWatcher(dir string, productName string, isVerifySign bool) error {
+	var (
+		mErr error
+	)
+
+	once.Do(func() {
+		var (
+			watcher *fsnotify.Watcher
+		)
+
+		//启动目录监听
+		watcher, mErr = fsnotify.NewWatcher()
+		if mErr != nil {
+			errLog.Println(mErr.Error())
+			return
+		}
+
+		//构造验证签名对象
+		alg, err := public.GetNonEquAlgorthm(nil, []byte(public.ECDSA_PUBLICKEY))
+		if err != nil {
+			mErr = err
+			errLog.Println(mErr.Error())
+			return
+		}
+
+		verifyLicense := func(dir string, alg *public.NonEquAlgorthm, proName string, isVerifySign bool) ([]byte, error) {
+			var (
+				err      error
+				content  []byte
+				pemBlock *pem.Block
+			)
+
+			//读取license.dat文件
+			licenseFilePath := path.Join(dir, LiceseFileName)
+			licenseBytes, err := public.ReadLicensePem(licenseFilePath)
+			if err != nil {
+				return nil, err
+			}
+
+			if isVerifySign {
+				//验证pem格式
+				if pemBlock, _ = pem.Decode(licenseBytes); pemBlock == nil {
+					return nil, fmt.Errorf("%s", "license must be PEM")
+				}
+
+				//验证签名
+				content, err = alg.VerifySign(string(pemBlock.Bytes))
+				if err != nil {
+					return nil, err
+				}
+
+				//获取license对象
+				license, err := public.ToLicense(content)
+				if err != nil {
+					return nil, err
+				}
+
+				//获取机器ID
+				machineID, err := public.GetMachineID()
+				if err != nil {
+					return nil, err
+				}
+
+				//对比过期时间以及机器ID
+				err = license.Valid(LinkLibVersion, proName, machineID)
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			return licenseBytes, nil
+		}
+
+		licenseBytes, err := verifyLicense(dir, alg, productName, isVerifySign)
+		if err != nil {
+			mErr = err
+			errLog.Println(mErr.Error())
+			return
+		} else {
+			licenseContent = licenseBytes
+			isValidLicense = true
+		}
+
+		go func() {
+			for {
+				select {
+				case event, ok := <-watcher.Events:
+					if !ok {
+						return
+					}
+
+					// log.Println("event:", event, event.Name)
+					if event.Name != LiceseFileName {
+						continue
+					}
+
+					licenseBytes, err := verifyLicense(dir, alg, productName, isVerifySign)
+					if err != nil {
+						mErr = err
+						errLog.Println(mErr.Error())
+						return
+					} else {
+						licenseContent = licenseBytes
+						isValidLicense = true
+					}
+				case err, ok := <-watcher.Errors:
+					if !ok {
+						errLog.Println("close watcher")
+						return
+					}
+					errLog.Println(err.Error())
+				}
+			}
+		}()
+
+		//监控目录
+		mErr = watcher.Add(dir)
+		if mErr != nil {
+			errLog.Println(mErr.Error())
+			return
+		}
+	})
+
+	if mErr != nil {
+		isValidLicense = false
+	} else {
+		isValidLicense = true
+	}
+	return mErr
+}
 
 //export LicenseConfigVer
 func LicenseConfigVer() string {
@@ -20,73 +174,22 @@ func LicenseConfigVer() string {
 }
 
 //export VerifyLicense
-func VerifyLicense(licenseFilePath string, productName string) *C.char {
-	var (
-		pemBlock *pem.Block
-		mErr     error
-	)
-
-	for {
-		//构造验证签名对象
-		alg, err := public.GetNonEquAlgorthm(nil, []byte(public.ECDSA_PUBLICKEY))
-		if err != nil {
-			mErr = err
-			break
-		}
-
-		//读取license.dat文件
-		licenseBytes, err := public.ReadLicensePem(licenseFilePath)
-		if err != nil {
-			mErr = err
-			break
-		}
-
-		//验证pem格式
-		if pemBlock, _ = pem.Decode(licenseBytes); pemBlock == nil {
-			mErr = fmt.Errorf("%s", "license must be PEM")
-			break
-		}
-
-		//验证签名
-		licenseBytes, err = alg.VerifySign(string(pemBlock.Bytes))
-		if err != nil {
-			mErr = err
-			break
-		}
-
-		//获取license对象
-		license, err := public.ToLicense(licenseBytes)
-		if err != nil {
-			mErr = err
-			break
-		}
-
-		//获取机器ID
-		machineID, err := public.GetMachineID()
-		if err != nil {
-			mErr = err
-			break
-		}
-
-		//对比过期时间以及机器ID
-		err = license.Valid(LinkLibVersion, productName, machineID)
-		if err != nil {
-			mErr = err
-			break
-		}
-
-		break
-	}
-
+func VerifyLicense(licenseDir string, productName string) C.int {
+	mErr := startWatcher(licenseDir, productName, true)
 	if mErr != nil {
-		return C.CString(mErr.Error())
+		errLog.Println(mErr.Error())
+		return -1
 	}
 
-	return C.CString("OK")
+	if isValidLicense {
+		return 0
+	}
+
+	return -1
 }
 
 //export ReadLicnese
-func ReadLicnese(licenseFilePath string) *C.char {
+func ReadLicnese(licenseDir string, productName string) *C.char {
 	var (
 		pemBlock     *pem.Block
 		lbytes       []byte
@@ -95,11 +198,23 @@ func ReadLicnese(licenseFilePath string) *C.char {
 		licenseStr   string
 	)
 
+	err = startWatcher(licenseDir, productName, false)
+	if err != nil {
+		errLog.Println(err.Error())
+		return C.CString("FAIL")
+	}
+
 	for {
-		//读取license.dat文件
-		licenseBytes, err = public.ReadLicensePem(licenseFilePath)
-		if err != nil {
-			break
+		if len(licenseContent) == 0 {
+			//读取license.dat文件
+			licenseFilePath := path.Join(licenseDir, LiceseFileName)
+			licenseBytes, err = public.ReadLicensePem(licenseFilePath)
+			if err != nil {
+				break
+			}
+			licenseContent = licenseBytes
+		} else {
+			licenseBytes = licenseContent
 		}
 
 		//验证pem格式
@@ -122,6 +237,7 @@ func ReadLicnese(licenseFilePath string) *C.char {
 	}
 
 	if err != nil {
+		errLog.Println(err.Error())
 		return C.CString("FAIL")
 	}
 
@@ -129,7 +245,7 @@ func ReadLicnese(licenseFilePath string) *C.char {
 }
 
 //export GetExpireSec
-func GetExpireSec(licenseFilePath string) C.longlong {
+func GetExpireSec(licenseDir string, productName string) C.longlong {
 	var (
 		pemBlock     *pem.Block
 		err          error
@@ -137,21 +253,36 @@ func GetExpireSec(licenseFilePath string) C.longlong {
 		seconds      int64
 	)
 
+	err = startWatcher(licenseDir, productName, false)
+	if err != nil {
+		errLog.Println(err.Error())
+		return C.longlong(-1)
+	}
+
 	for {
-		//读取license.dat文件
-		licenseBytes, err = public.ReadLicensePem(licenseFilePath)
-		if err != nil {
-			break
+		if len(licenseContent) == 0 {
+			//读取license.dat文件
+			licenseFilePath := path.Join(licenseDir, LiceseFileName)
+			licenseBytes, err = public.ReadLicensePem(licenseFilePath)
+			if err != nil {
+				errLog.Println(err.Error())
+				break
+			}
+			licenseContent = licenseBytes
+		} else {
+			licenseBytes = licenseContent
 		}
 
 		//验证pem格式
 		if pemBlock, _ = pem.Decode(licenseBytes); pemBlock == nil {
 			err = fmt.Errorf("%s", "license must be PEM")
+			errLog.Println(err.Error())
 			break
 		}
 
 		license, err := public.BytesToLicense(string(pemBlock.Bytes))
 		if err != nil {
+			errLog.Println(err.Error())
 			break
 		}
 

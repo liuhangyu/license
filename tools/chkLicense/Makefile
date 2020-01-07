@@ -6,7 +6,7 @@ export GO111MODULE=on
 all: chkshard chkplugin
 
 clean:
-	rm -rf ./chkplugin ./chkshard
+	rm -rf ./chkplugin ./chkshard ./license.log
 	@echo "Done clean"
 
 chkshard:
@@ -18,7 +18,7 @@ chkplugin:
 	@echo "Done build"
 
 run:
-	./chkplugin -l ../cli/license.dat -lib ../linklib/libplugin.so -p switch-directory-chain
-	./chkshard  "../cli/license.dat"  "switch-directory-chain" "../linklib/libshared.so"
+	./chkplugin -l ../cli  -lib ../linklib/libplugin.so -p switch-directory-chain
+	./chkshard  "../cli"  "switch-directory-chain" "../linklib/libshared.so"
 
 .PHONY: clean

@@ -90,6 +90,10 @@ func (c *License) GetExpiresAt() int64 {
 	return int64(delta.Seconds())
 }
 
+func (c *License) GetEndTime() string {
+	return time.Unix(c.ExpiresAt, 0).String()
+}
+
 //比较配置版本
 func (c *License) CompareConfigVer(configVer uint32) bool {
 	return c.ConfigVer == configVer

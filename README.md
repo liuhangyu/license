@@ -85,17 +85,18 @@ libshared.so
 
 1.验证license
 入参:
-license.dat文件路径
+license.dat文件所在的文件夹(建议创建独立存放license的文件夹)
 产品名
 出参:
-成功"OK"
-失败msg
-string VerifyLicense(string,string)
+成功0
+失败-1
+int VerifyLicense(string,string)
 
 
 2.读取license.dat配置
 入参:
-license.dat文件路径
+license.dat文件所在的文件夹(建议创建独立存放license的文件夹)
+产品名
 出参:
 成功json格式license文件内容
 失败"FALT"
@@ -103,7 +104,8 @@ string ReadLicnese(string)
 
 3.获取过期时间
 入参:
-license.dat文件路径
+license.dat文件所在的文件夹(建议创建独立存放license的文件夹)
+产品名
 出参:
 0已过期
 -1失败

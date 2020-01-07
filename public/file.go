@@ -20,7 +20,7 @@ func Exists(path string) bool {
 	return true
 }
 
-func SaveLicensePem(dir string, filename string, licenseString string, licenseID string, productName string) error {
+func SaveLicensePem(dir string, filename string, licenseString string, licenseID string, productName string, expiresTime string) error {
 	isExist := Exists(dir)
 	if isExist == false && dir != "." {
 		err := os.MkdirAll(dir, os.ModePerm)
@@ -40,7 +40,7 @@ func SaveLicensePem(dir string, filename string, licenseString string, licenseID
 	w := bufio.NewWriter(fd)
 	block := &pem.Block{
 		Type:    "LICENSE",
-		Headers: map[string]string{"LicenseID": licenseID, "ProductName": productName},
+		Headers: map[string]string{"LicenseID": licenseID, "ProductName": productName, "EndTime": expiresTime},
 		Bytes:   []byte(licenseString),
 	}
 
