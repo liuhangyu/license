@@ -129,6 +129,7 @@ func startWatcher(dir string, productName string, isVerifySign bool) error {
 
 					// log.Println("event:", event, event.Name)
 					if event.Name != LiceseFileName {
+						errLog.Println("event:", event, event.Name)
 						continue
 					}
 
