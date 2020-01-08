@@ -13,7 +13,7 @@ shard:
 ifeq ($(shell uname), Linux) 
 	go build -buildmode=c-shared -o libshared.so  libshared.go
 else ifeq ($(shell uname), Darwin) 
-    go build -buildmode=c-shared -o libshared.dylib  libshared.go
+	go build -buildmode=c-shared -o libshared.dylib  libshared.go
 endif
 	@echo "Done build"
 
