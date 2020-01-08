@@ -18,7 +18,7 @@ chkplugin:
 	@echo "Done build"
 
 run:
-	./chkplugin -l ../cli  -lib ../linklib/libplugin.so -p switch-directory-chain
-	./chkshard  "../cli"  "switch-directory-chain" "../linklib/libshared.so"
+	./chkplugin -l ../register  -lib ../linklib/libplugin.so -p switch-directory-chain
+	./chkshard  "../register"  "switch-directory-chain" "../linklib/libshared.so"
 
 .PHONY: clean

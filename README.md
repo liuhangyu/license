@@ -6,9 +6,9 @@ licensemgr linux平台
 licensemgr.exe win平台
 
 2.获取机器码以及license.dat安装程序
-进入license/tools/cli 
+进入license/tools/register 
 go build
-生成cli
+生成register
 
 3.链接库
 进入license/tools/linklib 
@@ -20,11 +20,12 @@ go build
 ### licensemgr是生成激活码程序(目录位置licensemgr)
 ```
 licensemgr是生成激活码程序,需要输入产品,过期时间,机器码
+(按quit或q退出)
 ```
 
-### cli获取机器码以及license.dat安装程序(目录位置licensemgr/tools/cli)
+### register获取机器码以及license.dat安装程序(目录位置licensemgr/tools/register)
 ```
-cli获取机器码以及license.dat安装程序,其中第一步获取机器码,下一步输入激活码
+register获取机器码以及license.dat安装程序,其中第一步获取机器码,下一步输入激活码
 ```
 
 
@@ -38,11 +39,11 @@ libshared.go是java的链接库
 ```
 chkplugin go测试license.dat程序
 输入参数如:
-./chkplugin -l ../cli/license.dat -lib ../linklib/libplugin.so -p switch-directory-chain
+./chkplugin -l ../register/license.dat -lib ../linklib/libplugin.so -p switch-directory-chain
 
 chkshard java测试license.dat程序
 输入参数如:
-./chkshard  "../cli/license.dat"  "switch-directory-chain" "../linklib/libshared.so"
+./chkshard  "../register/license.dat"  "switch-directory-chain" "../linklib/libshared.so"
 ```
 
 ### go程序对接(目录链,switch)

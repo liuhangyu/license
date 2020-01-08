@@ -82,5 +82,5 @@ int main(int argc,char *argv[])
 
 /*
 gcc -o main main.c -ldl -lshared -L ../../linklib  -I ../../linklib/
-./main "../../cli/license.dat"  "switch-directory-chain" "../../linklib/libshared.so"
+./main "../../register"  "switch-directory-chain" "../../linklib/libshared.so"
 */
