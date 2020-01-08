@@ -35,7 +35,7 @@ func init() {
 		os.Exit(0)
 	}
 	errLog = log.New(logFile, "[plugin]", log.LstdFlags|log.Lshortfile|log.LstdFlags|log.Lmicroseconds)
-	errLog.Println("license logger init...")
+	// errLog.Println("license logger init...")
 	return
 }
 
@@ -145,17 +145,17 @@ func startWatcher(dir string, productName string, isVerifySign bool) error {
 					}
 
 					if strings.Contains(event.Name, LiceseFileName) == false {
-						errLog.Printf("event, event:%v, name:%s\n", event, event.Name)
+						// errLog.Printf("event, event:%v, name:%s\n", event, event.Name)
 						continue
 					} else {
 						if event.Op&fsnotify.Create == fsnotify.Create { //no modified
-							errLog.Printf("event modified file, event:%v, name:%s\n", event, event.Name)
+							// errLog.Printf("event modified file, event:%v, name:%s\n", event, event.Name)
 						} else if event.Op&fsnotify.Write == fsnotify.Write {
-							errLog.Printf("event write file, event:%v, name:%s\n", event, event.Name)
+							// errLog.Printf("event write file, event:%v, name:%s\n", event, event.Name)
 						} else if event.Op&fsnotify.Remove == fsnotify.Remove {
-							errLog.Printf("event remove file, event:%v, name:%s\n", event, event.Name)
+							// errLog.Printf("event remove file, event:%v, name:%s\n", event, event.Name)
 						} else {
-							errLog.Printf("event contains file, event:%v, name:%s, continue...\n", event, event.Name)
+							// errLog.Printf("event contains file, event:%v, name:%s, continue...\n", event, event.Name)
 							continue
 						}
 					}

@@ -26,16 +26,20 @@ var (
 	licenseContent []byte
 	isValidLicense bool
 	errLog         *log.Logger
+	logFile        *os.File
 )
 
 func init() {
-	logFile, err := os.OpenFile("./license.log", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	var err error
+	logFile, err = os.OpenFile("./license.log", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		os.Exit(0)
 	}
 	errLog = log.New(logFile, "[shared]", log.LstdFlags|log.Lshortfile|log.LstdFlags|log.Lmicroseconds)
+	// errLog.Println("license logger init...")
 	return
 }
+
 
 func startWatcher(dir string, productName string, isVerifySign bool) error {
 	var (
@@ -47,27 +51,18 @@ func startWatcher(dir string, productName string, isVerifySign bool) error {
 			watcher *fsnotify.Watcher
 		)
 
-		//启动目录监听
-		watcher, mErr = fsnotify.NewWatcher()
-		if mErr != nil {
-			errLog.Println(mErr.Error())
-			return
-		}
-
-		//构造验证签名对象
-		alg, err := public.GetNonEquAlgorthm(nil, []byte(public.ECDSA_PUBLICKEY))
-		if err != nil {
-			mErr = err
-			errLog.Println(mErr.Error())
-			return
-		}
-
-		verifyLicense := func(dir string, alg *public.NonEquAlgorthm, proName string, isVerifySign bool) ([]byte, error) {
+		verifyLicense := func(dir string, proName string, isVerifySign bool) ([]byte, error) {
 			var (
 				err      error
 				content  []byte
 				pemBlock *pem.Block
 			)
+
+			//构造验证签名对象
+			alg, err := public.GetNonEquAlgorthm(nil, []byte(public.ECDSA_PUBLICKEY))
+			if err != nil {
+				return nil, err
+			}
 
 			//读取license.dat文件
 			licenseFilePath := path.Join(dir, LiceseFileName)
@@ -110,11 +105,34 @@ func startWatcher(dir string, productName string, isVerifySign bool) error {
 			return licenseBytes, nil
 		}
 
-		licenseBytes, err := verifyLicense(dir, alg, productName, isVerifySign)
+		for {
+			//启动目录监听
+			watcher, mErr = fsnotify.NewWatcher()
+			if mErr != nil {
+				break
+			}
+
+			//监控目录
+			mErr = watcher.Add(dir)
+			if mErr != nil {
+				break
+			}
+			break
+		}
+		if mErr != nil {
+			errLog.Println(mErr.Error())
+			watcher.Close()
+			if logFile != nil {
+				logFile.Close()
+			}
+			os.Exit(0)
+			return
+		}
+
+		licenseBytes, err := verifyLicense(dir, productName, isVerifySign)
 		if err != nil {
 			mErr = err
 			errLog.Println(mErr.Error())
-			return
 		} else {
 			licenseContent = licenseBytes
 			isValidLicense = true
@@ -128,16 +146,26 @@ func startWatcher(dir string, productName string, isVerifySign bool) error {
 						return
 					}
 
-					if strings.HasSuffix(event.Name, LiceseFileName) == false {
-						errLog.Println("event:", event, event.Name)
+					if strings.Contains(event.Name, LiceseFileName) == false {
+						// errLog.Printf("event, event:%v, name:%s\n", event, event.Name)
 						continue
+					} else {
+						if event.Op&fsnotify.Create == fsnotify.Create { //no modified
+							// errLog.Printf("event modified file, event:%v, name:%s\n", event, event.Name)
+						} else if event.Op&fsnotify.Write == fsnotify.Write {
+							// errLog.Printf("event write file, event:%v, name:%s\n", event, event.Name)
+						} else if event.Op&fsnotify.Remove == fsnotify.Remove {
+							// errLog.Printf("event remove file, event:%v, name:%s\n", event, event.Name)
+						} else {
+							// errLog.Printf("event contains file, event:%v, name:%s, continue...\n", event, event.Name)
+							continue
+						}
 					}
 
-					licenseBytes, err := verifyLicense(dir, alg, productName, isVerifySign)
+					licenseBytes, err := verifyLicense(dir, productName, isVerifySign)
 					if err != nil {
 						mErr = err
-						errLog.Println(mErr.Error())
-						return
+						isValidLicense = false
 					} else {
 						licenseContent = licenseBytes
 						isValidLicense = true
@@ -145,26 +173,15 @@ func startWatcher(dir string, productName string, isVerifySign bool) error {
 				case err, ok := <-watcher.Errors:
 					if !ok {
 						errLog.Println("close watcher")
+						isValidLicense = false
 						return
 					}
 					errLog.Println(err.Error())
 				}
 			}
 		}()
-
-		//监控目录
-		mErr = watcher.Add(dir)
-		if mErr != nil {
-			errLog.Println(mErr.Error())
-			return
-		}
 	})
 
-	if mErr != nil {
-		isValidLicense = false
-	} else {
-		isValidLicense = true
-	}
 	return mErr
 }
 
