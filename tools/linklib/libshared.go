@@ -33,7 +33,7 @@ func init() {
 	if err != nil {
 		os.Exit(0)
 	}
-	errLog = log.New(logFile, "[shared]", log.LstdFlags|log.Lshortfile|log.LstdFlags)
+	errLog = log.New(logFile, "[shared]", log.LstdFlags|log.Lshortfile|log.LstdFlags|log.Lmicroseconds)
 	return
 }
 

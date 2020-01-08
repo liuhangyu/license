@@ -65,6 +65,7 @@ func main() {
 			return
 		}
 		fmt.Println("验证成功")
+
 	}
 
 	//读取license配置文件
