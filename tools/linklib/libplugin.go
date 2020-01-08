@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"strings"
 	"sync"
 
 	"code.uni-ledger.com/switch/license/public"
@@ -126,7 +127,7 @@ func startWatcher(dir string, productName string, isVerifySign bool) error {
 						return
 					}
 
-					if event.Name != LiceseFileName {
+					if strings.HasSuffix(event.Name, LiceseFileName) == false {
 						errLog.Println("event:", event, event.Name)
 						continue
 					}
@@ -135,7 +136,7 @@ func startWatcher(dir string, productName string, isVerifySign bool) error {
 					if err != nil {
 						mErr = err
 						errLog.Println(mErr.Error())
-						return
+						isValidLicense = false
 					} else {
 						licenseContent = licenseBytes
 						isValidLicense = true

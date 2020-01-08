@@ -4,6 +4,7 @@ import "C"
 import (
 	"encoding/json"
 	"encoding/pem"
+	"strings"
 	"fmt"
 	"log"
 	"os"
@@ -127,8 +128,7 @@ func startWatcher(dir string, productName string, isVerifySign bool) error {
 						return
 					}
 
-					// log.Println("event:", event, event.Name)
-					if event.Name != LiceseFileName {
+					if strings.HasSuffix(event.Name, LiceseFileName) == false {
 						errLog.Println("event:", event, event.Name)
 						continue
 					}
