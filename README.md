@@ -84,7 +84,7 @@ libplugin.so
 libshared.so
 
 
-1.验证license
+1.验证license(验证签名)
 入参:
 license.dat文件所在的文件夹(建议创建独立存放license的文件夹)
 产品名
@@ -94,7 +94,7 @@ license.dat文件所在的文件夹(建议创建独立存放license的文件夹)
 int VerifyLicense(string,string)
 
 
-2.读取license.dat配置
+2.读取license.dat配置(不验证签名)
 入参:
 license.dat文件所在的文件夹(建议创建独立存放license的文件夹)
 产品名
@@ -103,7 +103,7 @@ license.dat文件所在的文件夹(建议创建独立存放license的文件夹)
 失败"FALT"
 string ReadLicnese(string)
 
-3.获取过期时间
+3.获取过期时间(不验证签名)
 入参:
 license.dat文件所在的文件夹(建议创建独立存放license的文件夹)
 产品名

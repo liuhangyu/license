@@ -65,8 +65,26 @@ func main() {
 			return
 		}
 		fmt.Println("验证成功")
-
 	}
+
+	// //验证license while-test
+	// {
+	// 	VerifyLicenseFunc, err := plugin.Lookup("VerifyLicense")
+	// 	if err != nil {
+	// 		fmt.Println(err.Error())
+	// 		return
+	// 	}
+
+	// 	for {
+	// 		time.Sleep(time.Second * 1)
+	// 		ret := VerifyLicenseFunc.(func(string, string) int)(l, p)
+	// 		if ret == -1 {
+	// 			fmt.Println("验证失败")
+	// 			continue
+	// 		}
+	// 		fmt.Println("验证成功")
+	// 	}
+	// }
 
 	//读取license配置文件
 	{
