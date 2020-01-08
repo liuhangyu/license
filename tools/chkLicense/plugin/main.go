@@ -74,7 +74,6 @@ func main() {
 	// 		fmt.Println(err.Error())
 	// 		return
 	// 	}
-
 	// 	for {
 	// 		time.Sleep(time.Second * 1)
 	// 		ret := VerifyLicenseFunc.(func(string, string) int)(l, p)
@@ -110,6 +109,30 @@ func main() {
 		fmt.Println()
 	}
 
+	// //while-test
+	// {
+	// 	ReadLicneseFunc, err := plugin.Lookup("ReadLicnese")
+	// 	if err != nil {
+	// 		fmt.Println(err.Error())
+	// 		return
+	// 	}
+	// 	for {
+	// 		time.Sleep(time.Second * 1)
+	// 		ret := ReadLicneseFunc.(func(string, string) string)(l, p)
+	// 		if ret == "FAIL" {
+	// 			fmt.Println(ret)
+	// 			continue
+	// 		}
+	// 		l := new(License)
+	// 		if err := json.Unmarshal([]byte(ret), l); err != nil {
+	// 			fmt.Println(err.Error())
+	// 			continue
+	// 		}
+	// 		fmt.Printf("%+v", *l)
+	// 		fmt.Println()
+	// 	}
+	// }
+
 	//查询过期时间
 	{
 		GetExpireSecFunc, err := plugin.Lookup("GetExpireSec")
@@ -125,4 +148,22 @@ func main() {
 		}
 		fmt.Println(GetExpireSecFunc, willExpireSec)
 	}
+
+	// //while-test
+	// {
+	// 	GetExpireSecFunc, err := plugin.Lookup("GetExpireSec")
+	// 	if err != nil {
+	// 		fmt.Println(err.Error())
+	// 		return
+	// 	}
+	// 	for {
+	// 		time.Sleep(time.Second * 1)
+	// 		willExpireSec := GetExpireSecFunc.(func(string, string) int64)(l, p)
+	// 		if willExpireSec == -1 {
+	// 			fmt.Println("fail")
+	// 			continue
+	// 		}
+	// 		fmt.Println(GetExpireSecFunc, willExpireSec)
+	// 	}
+	// }
 }
