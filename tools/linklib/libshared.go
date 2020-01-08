@@ -121,7 +121,9 @@ func startWatcher(dir string, productName string, isVerifySign bool) error {
 		}
 		if mErr != nil {
 			errLog.Println(mErr.Error())
-			watcher.Close()
+			if watcher != nil {
+				watcher.Close()
+			}
 			if logFile != nil {
 				logFile.Close()
 			}
