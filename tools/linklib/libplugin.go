@@ -1,6 +1,5 @@
 package main
 
-import "C"
 import (
 	"encoding/json"
 	"encoding/pem"
@@ -11,7 +10,7 @@ import (
 	"sync"
 
 	"code.uni-ledger.com/switch/license/public"
-	"github.com/fsnotify/fsnotify"
+	"code.uni-ledger.com/switch/license/public/deplib/fsnotify"
 )
 
 const (

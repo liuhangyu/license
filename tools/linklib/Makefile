@@ -18,7 +18,7 @@ endif
 	@echo "Done build"
 
 plugin:
-	go build -buildmode=plugin -o libplugin.so  libplugin.go
+	go build -gcflags=-trimpath=$GOPATH -asmflags=-trimpath=$GOPATH -ldflags "-w -s" -buildmode=plugin -o libplugin.so  libplugin.go
 	@echo "Done build"
 
 .PHONY: clean

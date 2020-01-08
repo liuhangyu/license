@@ -89,7 +89,7 @@ license.dat文件所在的文件夹(建议创建独立存放license的文件夹)
 产品名
 出参:
 成功0
-失败-1
+异常-1
 int VerifyLicense(string,string)
 
 

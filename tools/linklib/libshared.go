@@ -11,7 +11,7 @@ import (
 	"sync"
 
 	"code.uni-ledger.com/switch/license/public"
-	"github.com/fsnotify/fsnotify"
+	"code.uni-ledger.com/switch/license/public/deplib/fsnotify"
 )
 
 const (
