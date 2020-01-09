@@ -119,7 +119,6 @@ func InputExpiresTime() (int64, error) {
 		}
 
 		expiresAt = days * OneDaySeconds
-		// expiresAt = days //test second
 		duration := time.Duration(expiresAt) * time.Second
 		fmt.Println()
 		fmt.Printf("过期天数: %d days, 过期日期:%s \n", days, time.Now().Add(duration).Format("2006-01-02 15:04:05"))
@@ -190,6 +189,7 @@ func init() {
 
 func usage() {
 	fmt.Println("input 'quit' or 'q' to exit the program")
+	fmt.Println(public.GetAppInfo())
 }
 
 func LoadConfig() ([]*Products, error) {

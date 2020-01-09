@@ -7,7 +7,7 @@ licensemgr.exe win平台
 
 2.获取机器码以及license.dat安装程序
 进入license/tools/register 
-go build
+运行make
 生成register
 
 3.链接库
