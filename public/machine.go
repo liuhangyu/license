@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -163,6 +164,10 @@ func GetFSInfo() ([]string, error) {
 
 	fsContent, err := ReadFStabFile(FSTabFile)
 	if err != nil {
+		if runtime.GOOS == "darwin" || //macos,windows测试使用,不获取硬盘分区UUID
+			runtime.GOOS == "windows" {
+			return nil, nil
+		}
 		return nil, err
 	}
 
@@ -242,19 +247,21 @@ func GetHardwareAddr() ([]string, error) {
 }
 
 /*
-GetMachineID 获取机器ID (文件类型和网卡地址)
+GetMachineID 获取机器ID (分区UUID和网卡地址)
 */
 func GetMachineID() (string, error) {
 	var (
 		MachineIDList []string
 	)
 
+	//获取磁盘分区UUID
 	fsInfoList, err := GetFSInfo()
 	if err != nil {
 		return "", err
 	}
 	MachineIDList = append(MachineIDList, fsInfoList...)
 
+	//获取网卡地址
 	hardAddrList, err := GetHardwareAddr()
 	if err != nil {
 		return "", err

@@ -215,7 +215,7 @@ func ReadLicnese(licenseDir string, productName string) string {
 		licenseBytes []byte
 	)
 
-	err = startWatcher(licenseDir, productName, false)
+	err = startWatcher(licenseDir, productName, true)
 	if err != nil {
 		errLog.Println(err.Error())
 		return string("FAIL")
@@ -268,7 +268,7 @@ func GetExpireSec(licenseDir string, productName string) int64 {
 		licenseBytes []byte
 	)
 
-	err = startWatcher(licenseDir, productName, false)
+	err = startWatcher(licenseDir, productName, true)
 	if err != nil {
 		errLog.Println(err.Error())
 		return -1

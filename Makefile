@@ -6,7 +6,7 @@ export GO111MODULE=on
 all: linux win64 mac
 
 clean:
-	rm -rf ./licensemgr ./licensemgr.exe ./licensemgr.macho
+	rm -rf ./licensemgr ./licensemgr.exe ./licensemgr.macho ./data
 	@echo "Done clean"
 
 linux:

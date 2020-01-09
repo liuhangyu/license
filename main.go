@@ -3,8 +3,10 @@ package main
 import (
 	"bufio"
 	"encoding/base64"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -16,6 +18,7 @@ import (
 
 const (
 	OneDaySeconds = 86400
+	DataDir       = "data"
 )
 
 type Products struct {
@@ -128,7 +131,7 @@ func InputExpiresTime() (int64, error) {
 }
 
 func InputMachineID() (string, error) {
-	fmt.Printf("%s\n", "请输入机器ID:")
+	fmt.Printf("%s\n", "请输入机器码:")
 	input, err := inputReader.ReadString('\n')
 	if err != nil {
 		return "", err
@@ -143,7 +146,7 @@ func InputMachineID() (string, error) {
 		}
 
 		fmt.Println()
-		fmt.Printf("你输入的机器ID是: %s\n", inputString)
+		fmt.Printf("你输入的机器码是: %s\n", inputString)
 		fmt.Println()
 	}
 
@@ -189,6 +192,53 @@ func usage() {
 	fmt.Println("input 'quit' or 'q' to exit the program")
 }
 
+func LoadConfig() ([]*Products, error) {
+	var (
+		productList = []*Products{}
+	)
+
+	isExist := public.Exists(DataDir)
+	if isExist == false && DataDir != "." {
+		err := os.MkdirAll(DataDir, os.ModePerm)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	filePath := filepath.Join(DataDir, "products.json")
+
+	if public.Exists(filePath) { //文件存在
+		fd, err := os.OpenFile(filePath, os.O_RDONLY, 0644)
+		if err != nil {
+			return nil, err
+		}
+		defer fd.Close()
+
+		configBytes, err := ioutil.ReadAll(fd)
+		if err != nil {
+			return nil, err
+		}
+
+		err = json.Unmarshal(configBytes, &productList)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		encByte, err := json.Marshal(products)
+		if err != nil {
+			return nil, err
+		}
+
+		err = ioutil.WriteFile(filePath, encByte, 0644)
+		if err != nil {
+			return nil, err
+		}
+		productList = products
+	}
+
+	return productList, nil
+}
+
 func main() {
 	var (
 		err         error
@@ -196,8 +246,14 @@ func main() {
 		expiresAt   int64
 		machineID   string
 	)
-
 	flag.Parse()
+
+	//load config file
+	products, err = LoadConfig()
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
 
 	inputReader = bufio.NewReader(os.Stdin)
 
@@ -263,7 +319,7 @@ func main() {
 		return
 	}
 
-	dir := "./db"
+	dir := filepath.Join(DataDir, "db")
 	// fileName := "license.dat"
 	fileName := strings.Join([]string{"license", licenseIns.LicenseUUID, "dat"}, ".")
 	err = public.SaveLicensePem(dir, fileName, licenseString, licenseIns.LicenseUUID, productName, licenseIns.GetEndTime())
