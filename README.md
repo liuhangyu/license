@@ -61,6 +61,9 @@ make plugin
 license/tools/chkLicense/plugin/main.go 
 ```
 
+linux获取so版本:
+strings -a libplugin.so | grep LiConfig
+显示:LiConfigV1
 
 ### java,C程序对接(数易通)
 ```
