@@ -21,6 +21,7 @@ licensemgr.exe win平台
 ```
 licensemgr是生成激活码程序,需要输入产品,过期时间,机器码
 (按quit或q退出)
+初次运行会在当前目录生成/data/products.json产品配置信息,按格式可添加新的产品名
 ```
 
 ### register获取机器码以及license.dat安装程序(目录位置licensemgr/tools/register)
