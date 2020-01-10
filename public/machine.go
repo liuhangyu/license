@@ -21,7 +21,10 @@ const (
 func CheckCmdExists(command string) (string, error) {
 	path, err := exec.LookPath(command)
 	if err != nil {
-		fmt.Printf("didn't find 'blkid' executable\n")
+		if runtime.GOOS == "darwin" || //macos,windows测试使用,不获取硬盘分区UUID
+			runtime.GOOS == "windows" {
+			fmt.Printf("didn't find 'blkid' executable,err %s\n", err.Error())
+		}
 		return "", err
 	}
 	return path, nil
