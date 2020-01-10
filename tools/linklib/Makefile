@@ -43,7 +43,7 @@ endif
 	@echo "Done build"
 
 plugin:
-	CGO_ENABLED=0 go build -ldflags \
+	go build -ldflags \
     " \
     -X '${VERSION_DIR}.buildVersion=${BUILD_VERSION}' \
     -X '${VERSION_DIR}.buildName=${BUILD_NAME}' \
