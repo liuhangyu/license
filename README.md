@@ -63,8 +63,7 @@ license/tools/chkLicense/plugin/main.go
 ```
 
 linux获取so版本:
-strings -a libplugin.so | grep LiConfig
-显示:LiConfigV1
+在运行程序当前目录license.log文件中记录dll版本信息
 
 ### java,C程序对接(数易通)
 ```
