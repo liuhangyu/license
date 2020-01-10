@@ -35,7 +35,7 @@ func init() {
 		os.Exit(0)
 	}
 	errLog = log.New(logFile, "[plugin]", log.LstdFlags|log.Lshortfile|log.LstdFlags|log.Lmicroseconds)
-	errLog.Println("license init...")
+	errLog.Println("license init", public.GetAppInfo())
 	return
 }
 
@@ -104,6 +104,11 @@ func startWatcher(dir string, productName string, isVerifySign bool) error {
 		}
 
 		for {
+			if public.Exists(dir) == false {
+				mErr = fmt.Errorf("%s dir does not exist", dir)
+				break
+			}
+
 			//启动目录监听
 			watcher, mErr = fsnotify.NewWatcher()
 			if mErr != nil {
@@ -221,6 +226,11 @@ func ReadLicnese(licenseDir string, productName string) string {
 		return string("FAIL")
 	}
 
+	if public.Exists(licenseDir) == false {
+		errLog.Printf("%s dir does not exist\n", licenseDir)
+		return string("FAIL")
+	}
+
 	for {
 		if len(licenseContent) == 0 {
 			//读取license.dat文件
@@ -271,6 +281,11 @@ func GetExpireSec(licenseDir string, productName string) int64 {
 	err = startWatcher(licenseDir, productName, true)
 	if err != nil {
 		errLog.Println(err.Error())
+		return -1
+	}
+
+	if public.Exists(licenseDir) == false {
+		errLog.Printf("%s dir does not exist\n", licenseDir)
 		return -1
 	}
 

@@ -25,12 +25,13 @@ func usage() {
 }
 
 type License struct {
-	LicenseUUID string `json:"licensever"`  //license 唯一编号
-	ConfigVer   uint32 `json:"configver"`   //配置版本
-	ProductName string `json:"productname"` //产品名称
-	MachineID   string `json:"machineid"`   //机器ID
-	ExpiresAt   int64  `json:"expiresat"`   //过期时间
-	IssuedAt    int64  `json:"issuedat"`    //签发时间
+	LicenseUUID string                 `json:"licensever,omitempty"`  //license 唯一编号
+	ConfigVer   uint32                 `json:"configver,omitempty"`   //配置版本
+	ProductName string                 `json:"productname,omitempty"` //产品名称
+	MachineID   string                 `json:"machineid,omitempty"`   //机器ID
+	ExpiresAt   int64                  `json:"expiresat,omitempty"`   //过期时间
+	IssuedAt    int64                  `json:"issuedat,omitempty"`    //签发时间
+	CustomKV    map[string]interface{} `json:"customkv,omitempty"`
 }
 
 func main() {
@@ -167,3 +168,8 @@ func main() {
 	// 	}
 	// }
 }
+
+/*
+2020年1月10号
+sudo date -s "01/10/2020 13:30:00"
+*/

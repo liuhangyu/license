@@ -88,6 +88,7 @@ func init() {
 
 func usage() {
 	flag.PrintDefaults()
+	fmt.Println(public.GetAppInfo())
 }
 
 func main() {

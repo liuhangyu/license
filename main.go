@@ -119,7 +119,6 @@ func InputExpiresTime() (int64, error) {
 		}
 
 		expiresAt = days * OneDaySeconds
-		// expiresAt = days //test second
 		duration := time.Duration(expiresAt) * time.Second
 		fmt.Println()
 		fmt.Printf("过期天数: %d days, 过期日期:%s \n", days, time.Now().Add(duration).Format("2006-01-02 15:04:05"))
@@ -190,6 +189,7 @@ func init() {
 
 func usage() {
 	fmt.Println("input 'quit' or 'q' to exit the program")
+	fmt.Println(public.GetAppInfo())
 }
 
 func LoadConfig() ([]*Products, error) {
@@ -304,8 +304,13 @@ func main() {
 
 	duration := time.Duration(expiresAt) * time.Second
 
+	//定义License HEAD KV
+	uuid := public.GetUUID()
+	expiresTime := time.Now().Add(duration)
+	customKV := map[string]string{"LicenseID": uuid, "ProductName": productName, "EndTime": expiresTime.Format(time.RFC3339)}
+
 	//构造license结构
-	licenseIns := public.GenerateLicense(productName, machineID, duration)
+	licenseIns := public.GenerateLicense(uuid, productName, machineID, expiresTime.Unix(), customKV)
 	enCodeBytes, err := licenseIns.ToBytes()
 	if err != nil {
 		fmt.Println(err.Error())
@@ -320,9 +325,8 @@ func main() {
 	}
 
 	dir := filepath.Join(DataDir, "db")
-	// fileName := "license.dat"
 	fileName := strings.Join([]string{"license", licenseIns.LicenseUUID, "dat"}, ".")
-	err = public.SaveLicensePem(dir, fileName, licenseString, licenseIns.LicenseUUID, productName, licenseIns.GetEndTime())
+	err = public.SaveLicensePem(dir, fileName, licenseString, customKV)
 	if err != nil {
 		fmt.Println(err.Error())
 		return

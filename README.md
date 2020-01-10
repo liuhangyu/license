@@ -7,7 +7,7 @@ licensemgr.exe win平台
 
 2.获取机器码以及license.dat安装程序
 进入license/tools/register 
-go build
+运行make
 生成register
 
 3.链接库
@@ -21,6 +21,7 @@ go build
 ```
 licensemgr是生成激活码程序,需要输入产品,过期时间,机器码
 (按quit或q退出)
+初次运行会在当前目录生成/data/products.json产品配置信息,按格式可添加新的产品名
 ```
 
 ### register获取机器码以及license.dat安装程序(目录位置licensemgr/tools/register)
@@ -62,8 +63,7 @@ license/tools/chkLicense/plugin/main.go
 ```
 
 linux获取so版本:
-strings -a libplugin.so | grep LiConfig
-显示:LiConfigV1
+在运行程序当前目录license.log文件中记录dll版本信息
 
 ### java,C程序对接(数易通)
 ```
@@ -104,7 +104,7 @@ license.dat文件所在的文件夹(建议创建独立存放license的文件夹)
 出参:
 成功json格式license文件内容
 失败"FALT"
-string ReadLicnese(string)
+string ReadLicnese(string,string)
 
 3.获取过期时间(不验证签名)
 入参:
@@ -114,5 +114,5 @@ license.dat文件所在的文件夹(建议创建独立存放license的文件夹)
 0已过期
 -1失败
 >0 剩余时间(剩余未过期的秒数)
-int64 GetExpireSec(string)
+int64 GetExpireSec(string,string)
 ```
