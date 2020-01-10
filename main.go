@@ -17,8 +17,9 @@ import (
 )
 
 const (
-	OneDaySeconds = 86400
-	DataDir       = "data"
+	OneDaySeconds    = 86400
+	OneMinuteSeconds = 60
+	DataDir          = "data"
 )
 
 type Products struct {
@@ -95,7 +96,7 @@ func InputExpiresTime() (int64, error) {
 		expiresAt int64
 	)
 
-	fmt.Printf("%s\n", "请输入过期时间(单位天):")
+	fmt.Printf("%s\n", "请输入过期时间,例如: 12d (单位:天[d] 分钟[m] 秒[s]):")
 	input, err := inputReader.ReadString('\n')
 	if err != nil {
 		return 0, err
@@ -109,22 +110,61 @@ func InputExpiresTime() (int64, error) {
 			os.Exit(0)
 		}
 
-		days, err := strconv.ParseInt(inputString, 10, 64)
-		if err != nil {
-			return 0, err
-		}
+		if strings.HasSuffix(inputString, "d") {
+			inputString = inputString[:len(inputString)-1]
+			days, err := strconv.ParseInt(inputString, 10, 64)
+			if err != nil {
+				return 0, err
+			}
 
-		if days <= 0 || days > 100*356 {
-			return 0, fmt.Errorf("%s", "invalid input number")
-		}
+			if days <= 0 || days > 100*356 {
+				return 0, fmt.Errorf("输入天数不能小于0,大于%d天", 100*356)
+			}
 
-		expiresAt = days * OneDaySeconds
-		duration := time.Duration(expiresAt) * time.Second
-		fmt.Println()
-		fmt.Printf("过期天数: %d days, 过期日期:%s \n", days, time.Now().Add(duration).Format("2006-01-02 15:04:05"))
-		fmt.Println()
+			expiresAt = days * OneDaySeconds
+			duration := time.Duration(expiresAt) * time.Second
+
+			fmt.Println()
+			fmt.Printf("过期天数: %d days, 过期日期:%s \n", days, time.Now().Add(duration).Format("2006-01-02 15:04:05"))
+			fmt.Println()
+		} else if strings.HasSuffix(inputString, "m") {
+			inputString = inputString[:len(inputString)-1]
+			minute, err := strconv.ParseInt(inputString, 10, 64)
+			if err != nil {
+				return 0, err
+			}
+
+			if minute <= 0 || minute > 100*356*24*60 {
+				return 0, fmt.Errorf("输入分钟不能小于0,大于%d分钟", 100*356*24*60)
+			}
+
+			expiresAt = minute * OneMinuteSeconds
+			duration := time.Duration(expiresAt) * time.Second
+
+			fmt.Println()
+			fmt.Printf("过期分钟数: %d minute, 过期日期:%s \n", minute, time.Now().Add(duration).Format("2006-01-02 15:04:05"))
+			fmt.Println()
+		} else if strings.HasSuffix(inputString, "s") {
+			inputString = inputString[:len(inputString)-1]
+			seconds, err := strconv.ParseInt(inputString, 10, 64)
+			if err != nil {
+				return 0, err
+			}
+
+			if seconds <= 0 || seconds > 100*356*24*60*60 {
+				return 0, fmt.Errorf("输入秒不能小于0,大于%d秒", 100*356*24*60*60)
+			}
+
+			expiresAt = seconds
+			duration := time.Duration(expiresAt) * time.Second
+
+			fmt.Println()
+			fmt.Printf("过期秒数: %d minute, 过期日期:%s \n", seconds, time.Now().Add(duration).Format("2006-01-02 15:04:05"))
+			fmt.Println()
+		} else {
+			return 0, fmt.Errorf("%s", "输入不正确,请输入时间单位")
+		}
 	}
-
 	// fmt.Println("\033[H\033[2J")
 	return expiresAt, nil
 }
