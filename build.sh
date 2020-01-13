@@ -38,39 +38,39 @@ buildDll() {
 
 #############打包#############
 packLicenseMgr() {
-    if [ ! -d lincese.v$BUILD_VERSION ]; then   
-        echo  lincese.v$BUILD_VERSION" dir not exist"
+    if [ ! -d lincese ]; then   
+        echo  lincese" dir not exist"
         exit -1
     fi
 
-    mkdir -p  lincese.v$BUILD_VERSION/licensemgr
-    cp licensemgr lincese.v$BUILD_VERSION/licensemgr
-    cp licensemgr.exe lincese.v$BUILD_VERSION/licensemgr
-    cp licensemgr.macho lincese.v$BUILD_VERSION/licensemgr
-    cd lincese.v$BUILD_VERSION
+    mkdir -p  lincese/licensemgr-v$BUILD_VERSION
+    cp licensemgr lincese/licensemgr-v$BUILD_VERSION
+    cp licensemgr.exe lincese/licensemgr-v$BUILD_VERSION
+    cp licensemgr.macho lincese/licensemgr-v$BUILD_VERSION
+    cd lincese
     # tar -zcvf licensemgr.tar.gz licensemgr
-    zip -r licensemgr.zip licensemgr
-    rm -rf licensemgr
+    zip -r licensemgr-v$BUILD_VERSION.zip licensemgr-v$BUILD_VERSION
+    rm -rf licensemgr-v$BUILD_VERSION
     cd $ROOT_PATH
 }
 
 packCli() {
-    if [ ! -d lincese.v$BUILD_VERSION ]; then   
-        echo  lincese.v$BUILD_VERSION" dir not exist"
+    if [ ! -d lincese ]; then   
+        echo  lincese" dir not exist"
         exit -1
     fi
-    mkdir -p lincese.v$BUILD_VERSION/cli
-    cp tools/linklib/libplugin.so lincese.v$BUILD_VERSION/cli
-    cp tools/linklib/libshared.so lincese.v$BUILD_VERSION/cli
-    cp tools/linklib/libshared.h lincese.v$BUILD_VERSION/cli
+    mkdir -p lincese/cli-v$BUILD_VERSION
+    cp tools/linklib/libplugin.so lincese/cli-v$BUILD_VERSION
+    cp tools/linklib/libshared.so lincese/cli-v$BUILD_VERSION
+    cp tools/linklib/libshared.h lincese/cli-v$BUILD_VERSION
 
-    cp tools/register/register lincese.v$BUILD_VERSION/cli
-    cp tools/register/register.exe lincese.v$BUILD_VERSION/cli
-    cp tools/register/register.macho lincese.v$BUILD_VERSION/cli
+    cp tools/register/register lincese/cli-v$BUILD_VERSION
+    cp tools/register/register.exe lincese/cli-v$BUILD_VERSION
+    cp tools/register/register.macho lincese/cli-v$BUILD_VERSION
 
-    cd lincese.v$BUILD_VERSION
-    zip -r cli.zip cli
-    rm -rf cli
+    cd lincese
+    zip -r cli-v$BUILD_VERSION.zip cli-v$BUILD_VERSION
+    rm -rf cli-v$BUILD_VERSION
     cd $ROOT_PATH
 }
 
@@ -87,10 +87,10 @@ elif [ "${MODE}" == "build" ]; then
 elif [ "${MODE}" == "pack" ]; then
     echo "pack binary package..."
     echo $BUILD_VERSION
-    if [ -d lincese.v$BUILD_VERSION ]; then   
-        rm -rf lincese.v$BUILD_VERSION
+    if [ -d lincese ]; then   
+        rm -rf lincese
     fi 
-    mkdir -p lincese.v$BUILD_VERSION
+    mkdir -p lincese
     packLicenseMgr
     packCli
 fi
