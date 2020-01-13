@@ -17,6 +17,7 @@ import (
 )
 
 const (
+	OneYearSeconds   = 31536000
 	OneDaySeconds    = 86400
 	OneMinuteSeconds = 60
 	DataDir          = "data"
@@ -96,7 +97,7 @@ func InputExpiresTime() (int64, error) {
 		expiresAt int64
 	)
 
-	fmt.Printf("%s\n", "请输入过期时间,例如: 12d (单位:天[d] 分钟[m] 秒[s]):")
+	fmt.Printf("%s\n", "请输入过期时间,例如12天:12d (单位:天[d] 分钟[m] 秒[s] 年[y]):")
 	input, err := inputReader.ReadString('\n')
 	if err != nil {
 		return 0, err
@@ -110,9 +111,28 @@ func InputExpiresTime() (int64, error) {
 			os.Exit(0)
 		}
 
-		if strings.HasSuffix(inputString, "d") {
+		if strings.HasSuffix(inputString, "y") {
+			inputString = inputString[:len(inputString)-1]
+			years, err := strconv.ParseInt(inputString, 10, 64)
+			// days, err := strconv.ParseFloat(inputString, 64)
+			if err != nil {
+				return 0, err
+			}
+
+			if years <= 0 || years > 100 {
+				return 0, fmt.Errorf("输入年数不能小于0,大于%d年", 100)
+			}
+
+			expiresAt = years * OneYearSeconds
+			duration := time.Duration(expiresAt) * time.Second
+
+			fmt.Println()
+			fmt.Printf("过期年数: %d years, 过期日期:%s \n", years, time.Now().Add(duration).Format("2006-01-02 15:04:05"))
+			fmt.Println()
+		} else if strings.HasSuffix(inputString, "d") {
 			inputString = inputString[:len(inputString)-1]
 			days, err := strconv.ParseInt(inputString, 10, 64)
+			// days, err := strconv.ParseFloat(inputString, 64)
 			if err != nil {
 				return 0, err
 			}
@@ -121,7 +141,7 @@ func InputExpiresTime() (int64, error) {
 				return 0, fmt.Errorf("输入天数不能小于0,大于%d天", 100*356)
 			}
 
-			expiresAt = days * OneDaySeconds
+			expiresAt = int64(days * OneDaySeconds)
 			duration := time.Duration(expiresAt) * time.Second
 
 			fmt.Println()
