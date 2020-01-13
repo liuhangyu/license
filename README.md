@@ -21,7 +21,20 @@ licensemgr.exe win平台
 ```
 licensemgr是生成激活码程序,需要输入产品,过期时间,机器码
 (按quit或q退出)
-初次运行会在当前目录生成/data/products.json产品配置信息,按格式可添加新的产品名
+初次运行会在当前目录生成/data/products.json产品配置信息;
+
+如需添加新的产品信息(产品名是"新产品1"和程序内产品名是"new-product"):
+1.打开文件/data/products.json
+"
+[
+{"ProductExplan":"新产品1","ProductName":"new-product"},
+{"ProductExplan":"目录链","ProductName":"switch-directory-chain"},
+{"ProductExplan":"数据交换平台","ProductName":"switch"},
+{"ProductExplan":"数易通","ProductName":"tusdao-shuttle"}
+]
+"
+2.保存,重新打开./licensemgr 就可以看见新加的产品
+
 ```
 
 ### register获取机器码以及license.dat安装程序(目录位置licensemgr/tools/register)

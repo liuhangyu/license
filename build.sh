@@ -38,16 +38,16 @@ buildDll() {
 
 #############打包#############
 packLicenseMgr() {
-    if [ ! -d lincese ]; then   
-        echo  lincese" dir not exist"
+    if [ ! -d binPack ]; then   
+        echo  binPack" dir not exist"
         exit -1
     fi
 
-    mkdir -p  lincese/licensemgr-v$BUILD_VERSION
-    cp licensemgr lincese/licensemgr-v$BUILD_VERSION
-    cp licensemgr.exe lincese/licensemgr-v$BUILD_VERSION
-    cp licensemgr.macho lincese/licensemgr-v$BUILD_VERSION
-    cd lincese
+    mkdir -p  binPack/licensemgr-v$BUILD_VERSION
+    cp licensemgr binPack/licensemgr-v$BUILD_VERSION
+    cp licensemgr.exe binPack/licensemgr-v$BUILD_VERSION
+    cp licensemgr.macho binPack/licensemgr-v$BUILD_VERSION
+    cd binPack
     # tar -zcvf licensemgr.tar.gz licensemgr
     zip -r licensemgr-v$BUILD_VERSION.zip licensemgr-v$BUILD_VERSION
     rm -rf licensemgr-v$BUILD_VERSION
@@ -55,20 +55,20 @@ packLicenseMgr() {
 }
 
 packCli() {
-    if [ ! -d lincese ]; then   
-        echo  lincese" dir not exist"
+    if [ ! -d binPack ]; then   
+        echo  binPack" dir not exist"
         exit -1
     fi
-    mkdir -p lincese/cli-v$BUILD_VERSION
-    cp tools/linklib/libplugin.so lincese/cli-v$BUILD_VERSION
-    cp tools/linklib/libshared.so lincese/cli-v$BUILD_VERSION
-    cp tools/linklib/libshared.h lincese/cli-v$BUILD_VERSION
+    mkdir -p binPack/cli-v$BUILD_VERSION
+    cp tools/linklib/libplugin.so binPack/cli-v$BUILD_VERSION
+    cp tools/linklib/libshared.so binPack/cli-v$BUILD_VERSION
+    cp tools/linklib/libshared.h binPack/cli-v$BUILD_VERSION
 
-    cp tools/register/register lincese/cli-v$BUILD_VERSION
-    cp tools/register/register.exe lincese/cli-v$BUILD_VERSION
-    cp tools/register/register.macho lincese/cli-v$BUILD_VERSION
+    cp tools/register/register binPack/cli-v$BUILD_VERSION
+    cp tools/register/register.exe binPack/cli-v$BUILD_VERSION
+    cp tools/register/register.macho binPack/cli-v$BUILD_VERSION
 
-    cd lincese
+    cd binPack
     zip -r cli-v$BUILD_VERSION.zip cli-v$BUILD_VERSION
     rm -rf cli-v$BUILD_VERSION
     cd $ROOT_PATH
@@ -87,10 +87,10 @@ elif [ "${MODE}" == "build" ]; then
 elif [ "${MODE}" == "pack" ]; then
     echo "pack binary package..."
     echo $BUILD_VERSION
-    if [ -d lincese ]; then   
-        rm -rf lincese
+    if [ -d binPack ]; then   
+        rm -rf binPack
     fi 
-    mkdir -p lincese
+    mkdir -p binPack
     packLicenseMgr
     packCli
 fi
