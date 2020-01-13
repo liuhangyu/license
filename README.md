@@ -33,7 +33,7 @@ licensemgr是生成激活码程序,需要输入产品,过期时间,机器码
 {"ProductExplan":"数易通","ProductName":"tusdao-shuttle"}
 ]
 "
-2.保存,重新打开./licensemgr 就可以看见新加的产品
+2.保存,重新运行./licensemgr 就可以看见新加的产品
 
 ```
 
