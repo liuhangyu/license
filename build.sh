@@ -59,21 +59,27 @@ packCli() {
         echo  binPack" dir not exist"
         exit -1
     fi
-    mkdir -p binPack/license-v$BUILD_VERSION
-    cp tools/linklib/libplugin.so binPack/license-v$BUILD_VERSION
-    cp tools/linklib/libshared.so binPack/license-v$BUILD_VERSION
-    cp tools/linklib/libshared.h binPack/license-v$BUILD_VERSION
+    mkdir -p binPack/license
+    cp tools/linklib/libplugin.so binPack/license
+    cp tools/linklib/libshared.so binPack/license
+    cp tools/linklib/libshared.h binPack/license
 
-    cp tools/register/register binPack/license-v$BUILD_VERSION
-    cp tools/register/register.exe binPack/license-v$BUILD_VERSION
-    cp tools/register/register.macho binPack/license-v$BUILD_VERSION
+    cp tools/register/register binPack/license
+    cp tools/register/register.exe binPack/license
+    cp tools/register/register.macho binPack/license
 
     cd binPack
-    zip -r license-v$BUILD_VERSION.zip license-v$BUILD_VERSION
-    rm -rf license-v$BUILD_VERSION
+    zip -r license.zip license
+    rm -rf license
     cd $ROOT_PATH
 }
 
+backUpMgr() {
+    if [ ! -d licenseMgrVersion ]; then   
+        mkdir -p licenseMgrVersion
+    fi
+    cp -f binPack/licensemgr*  licenseMgrVersion
+}
 
 MODE=$1
 if [ "${MODE}" == "clean" ]; then
@@ -93,6 +99,7 @@ elif [ "${MODE}" == "pack" ]; then
     mkdir -p binPack
     packLicenseMgr
     packCli
+    backUpMgr
 fi
 
 
