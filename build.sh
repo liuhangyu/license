@@ -59,18 +59,18 @@ packCli() {
         echo  binPack" dir not exist"
         exit -1
     fi
-    mkdir -p binPack/cli-v$BUILD_VERSION
-    cp tools/linklib/libplugin.so binPack/cli-v$BUILD_VERSION
-    cp tools/linklib/libshared.so binPack/cli-v$BUILD_VERSION
-    cp tools/linklib/libshared.h binPack/cli-v$BUILD_VERSION
+    mkdir -p binPack/license-v$BUILD_VERSION
+    cp tools/linklib/libplugin.so binPack/license-v$BUILD_VERSION
+    cp tools/linklib/libshared.so binPack/license-v$BUILD_VERSION
+    cp tools/linklib/libshared.h binPack/license-v$BUILD_VERSION
 
-    cp tools/register/register binPack/cli-v$BUILD_VERSION
-    cp tools/register/register.exe binPack/cli-v$BUILD_VERSION
-    cp tools/register/register.macho binPack/cli-v$BUILD_VERSION
+    cp tools/register/register binPack/license-v$BUILD_VERSION
+    cp tools/register/register.exe binPack/license-v$BUILD_VERSION
+    cp tools/register/register.macho binPack/license-v$BUILD_VERSION
 
     cd binPack
-    zip -r cli-v$BUILD_VERSION.zip cli-v$BUILD_VERSION
-    rm -rf cli-v$BUILD_VERSION
+    zip -r license-v$BUILD_VERSION.zip license-v$BUILD_VERSION
+    rm -rf license-v$BUILD_VERSION
     cd $ROOT_PATH
 }
 
