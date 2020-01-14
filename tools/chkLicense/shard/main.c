@@ -73,7 +73,7 @@ int main(int argc,char *argv[])
   {
     GetExpireSecFunc = dlsym(handle, "GetExpireSec");
     long long int seconds = GetExpireSecFunc(licensePath, productName);
-    printf("GetExpireSecFunc %lld\n", seconds);
+    printf("GetExpireSecFunc, 剩余秒数:%lld\n", seconds);
   }
 
   dlclose(handle);

@@ -17,3 +17,22 @@ func CheckFileIsExist(filename string) bool {
 	}
 	return exist
 }
+
+func RemoveDuplicate(list []int) []int {
+	var x []int
+	for _, i := range list {
+		if len(x) == 0 {
+			x = append(x, i)
+		} else {
+			for k, v := range x {
+				if i == v {
+					break
+				}
+				if k == len(x)-1 {
+					x = append(x, i)
+				}
+			}
+		}
+	}
+	return x
+}

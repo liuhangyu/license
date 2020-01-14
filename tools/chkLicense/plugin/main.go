@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"plugin"
+	"time"
 )
 
 var (
@@ -147,7 +148,7 @@ func main() {
 			fmt.Println("fail")
 			return
 		}
-		fmt.Println(GetExpireSecFunc, willExpireSec)
+		fmt.Println("GetExpireSecFunc, 剩余秒数:", willExpireSec, time.Unix(willExpireSec+time.Now().Unix(), 0).Format("2006-01-02 15:04:05"))
 	}
 
 	// //while-test
