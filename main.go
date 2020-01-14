@@ -302,7 +302,7 @@ func ReadCustomKV(productName string) ([]AttrKV, error) {
 		}
 
 		attr.Options = append(attr.Options, Option{
-			Desc:  "示例配置1",
+			Desc:  "示例配置",
 			Key:   "key1",
 			Value: "val1",
 		})
@@ -511,7 +511,7 @@ func main() {
 	}
 
 	for {
-		if len(attrKV) == 1 && attrKV[0].Desc == "示例配置1" {
+		if len(attrKV) == 1 && attrKV[0].Desc == "示例配置" {
 			break
 		}
 
