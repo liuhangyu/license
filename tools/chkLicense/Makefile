@@ -10,7 +10,7 @@ clean:
 	@echo "Done clean"
 
 chkshard:
-	gcc -o chkshard ./shard/main.c -ldl -lshared -L ../linklib -I ../linklib/
+	gcc -o chkshard ./shard/main.c -ldl -llicense -L ../linklib/shared -I ../linklib/shared
 	@echo "Done build"
 
 chkplugin:
@@ -18,8 +18,8 @@ chkplugin:
 	@echo "Done build"
 
 run:
-	export LD_LIBRARY_PATH=../linklib
-	./chkplugin -l ../register  -lib ../linklib/libplugin.so -p switch-directory-chain
-	./chkshard  "../register"  "switch-directory-chain" "../linklib/libshared.so"
+	export LD_LIBRARY_PATH=../linklib/shared
+	./chkplugin -l ../register  -lib ../linklib/plugin/liblicense.so -p switch-directory-chain
+	./chkshard  "../register"  "switch-directory-chain" "../linklib/shared/liblicense.so"
 
 .PHONY: clean

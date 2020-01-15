@@ -43,10 +43,14 @@ packLicenseMgr() {
         exit -1
     fi
 
-    mkdir -p  binPack/licensemgr-$BUILD_VERSION
-    cp licensemgr binPack/licensemgr-$BUILD_VERSION
-    cp licensemgr.exe binPack/licensemgr-$BUILD_VERSION
-    cp licensemgr.macho binPack/licensemgr-$BUILD_VERSION
+    mkdir -p  binPack/licensemgr-$BUILD_VERSION/licensemgr/data
+    cp licensemgr binPack/licensemgr-$BUILD_VERSION/licensemgr
+    cp licensemgr.exe binPack/licensemgr-$BUILD_VERSION/licensemgr
+    cp licensemgr.app binPack/licensemgr-$BUILD_VERSION/licensemgr
+    cp data/products.json binPack/licensemgr-$BUILD_VERSION/licensemgr/data
+    cp data/switch-directory-chain.xml binPack/licensemgr-$BUILD_VERSION/licensemgr/data
+    cp data/switch.xml binPack/licensemgr-$BUILD_VERSION/licensemgr/data
+    cp tusdao-shuttle.xml binPack/licensemgr-$BUILD_VERSION/licensemgr/data
     cd binPack
     # tar -zcvf licensemgr.tar.gz licensemgr
     zip -r licensemgr-$BUILD_VERSION.zip licensemgr-$BUILD_VERSION
@@ -61,13 +65,13 @@ packCli() {
     fi
     mkdir -p binPack/license/plugin
     mkdir -p binPack/license/shared
-    cp tools/linklib/libplugin.so binPack/license/plugin/liblicense.so
-    cp tools/linklib/libshared.so binPack/license/shared/liblicense.so
-    cp tools/linklib/libshared.h binPack/license/shared/libshared.h
+    cp tools/linklib/plugin/liblicense.so binPack/license/plugin/liblicense.so
+    cp tools/linklib/shared/liblicense.so binPack/license/shared/liblicense.so
+    cp tools/linklib/shared/liblicense.h binPack/license/shared/libshared.h
 
     cp tools/register/register binPack/license
     cp tools/register/register.exe binPack/license
-    cp tools/register/register.macho binPack/license
+    cp tools/register/register.app binPack/license
 
     cd binPack
     zip -r license.zip license

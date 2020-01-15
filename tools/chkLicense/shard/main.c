@@ -2,11 +2,11 @@
 #include <dlfcn.h>
 #include <string.h>
 #include <stdlib.h>
-#include "libshared.h"
+#include "liblicense.h"
 
 const char *licenseDirPath  = "../cli";
 const char *productNameString =  "switch-directory-chain";
-const char *libshardPath = "../linklib/libshared.so";
+const char *libshardPath = "../linklib/liblicense.so";
 const char *licenseLogPath = "./license.log";
 
 static const char *ErrList[] = {

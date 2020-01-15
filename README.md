@@ -13,7 +13,10 @@ licensemgr.exe win平台
 3.链接库
 进入license/tools/linklib 
 运行make
-生成libplugin.so  libshared.go  libshared.h
+生成
+/plugin/liblicense.so  
+/shared/liblicense.go  
+/shared/liblicense.h
 
 ```
 
@@ -64,20 +67,22 @@ register获取机器码以及license.dat安装程序,其中第一步获取机器
 
 ### lib链接库(目录位置licensemgr/tools/linklib)
 ```
-libplugin.go是go的license链接库
-libshared.go是java的链接库
+plugin/liblicense.go是go的license链接库
+shared/liblicense.go是java的链接库
 ```
 
 ### license测试验证程序(目录位置licensemgr/tools/chkLicense)
 ```
 chkplugin go测试license.dat程序
 输入参数如:
-./chkplugin -l ../register/license.dat -lib ../linklib/libplugin.so -p switch-directory-chain
+./chkplugin -l ../register  -lib ../linklib/plugin/liblicense.so -p switch-directory-chain
 
 chkshard java测试license.dat程序
 输入参数如:
-./chkshard  "../register/license.dat"  "switch-directory-chain" "../linklib/libshared.so"
+export LD_LIBRARY_PATH=../linklib/shared
+./chkshard  "../register"  "switch-directory-chain" "../linklib/shared/liblicense.so"
 ```
+
 
 ### go程序对接(目录链,switch)
 ```
@@ -86,10 +91,10 @@ chkshard java测试license.dat程序
 
 第二步:
 make plugin
-生成libplugin.so插件
+生成go的plugin/liblicense.so插件
 
 第三步:
-在go程序中使用libplugin.so
+在go程序中使用liblicense.so
 请查看:
 license/tools/chkLicense/plugin/main.go 
 ```
@@ -104,10 +109,10 @@ linux获取so版本:
 
 第二步:
 make shard
-生成libshared.h libshared.so
+生成shard/libshared.h shard/libshared.so
 
 第三步:
-在C程序中使用libshared.so
+在C程序中使用shard/liblicense.so
 请查看:
 license/tools/chkLicense/shard/main.c
 
@@ -115,8 +120,7 @@ license/tools/chkLicense/shard/main.c
 
 ### 库中接口(具体数值类型根据各语言设定而不同)
 ```
-libplugin.so
-libshared.so
+liblicense.so
 
 1.创建license对象
 入参:
