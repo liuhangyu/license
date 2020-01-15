@@ -35,6 +35,25 @@ licensemgr是生成激活码程序,需要输入产品,过期时间,机器码
 "
 2.保存,重新运行./licensemgr 就可以看见新加的产品
 
+3.如果产品需设置自定义的KV配置,需要修改对应产品的xml模板文件.
+例如目录链配置:
+./data/switch-directory-chain.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<options version="1">
+    <option>
+        <desc>示例配置1</desc>
+        <key>key1</key>
+        <val>val1</val>
+    </option>
+    <option>
+        <desc>配置版本1</desc>
+        <key>key1</key>
+        <val>val1</val>
+    </option>
+</options>
+
+
 ```
 
 ### register获取机器码以及license.dat安装程序(目录位置licensemgr/tools/register)
@@ -99,18 +118,52 @@ license/tools/chkLicense/shard/main.c
 libplugin.so
 libshared.so
 
+1.创建license对象
+入参:
+license.dat文件所在的文件夹(建议创建独立存放license的文件夹)
+产品名
+license log文件路径
+出参:
+成功""空字符
+失败,则errMsg
+string NewLicense(string,string,string)  
 
-1.验证license(验证签名)
+2.销毁license对象
+入参:
+无
+出参:
+成功""空字符
+失败,则errMsg
+string FreeLicense() 
+
+3.验证license(验证签名)
 入参:
 license.dat文件所在的文件夹(建议创建独立存放license的文件夹)
 产品名
 出参:
-成功0
-异常-1
+成功返回1
+失败返回errCode,且小于等于0
+错误errCode:
+0:   "uninitialized object",
+-1:  "unknown error",
+-2:  "dir does not exist",
+-3:  "new watcher object failed",
+-4:  "watcher add dir failed",
+-5:  "failed to load public key",
+-6:  "reading authorization file failed",
+-7:  "decode authorization file failed",
+-8:  "failed to verify signature",
+-9:  "unmarshal license object failed",
+-10: "failed to get machine code",
+-11: "product name does not match",
+-12: "license is expired",
+-13: "license used before issued",
+-14: "machine id does not match",
+
 int VerifyLicense(string,string)
 
 
-2.读取license.dat配置(不验证签名)
+4.读取license.dat配置(不验证签名)
 入参:
 license.dat文件所在的文件夹(建议创建独立存放license的文件夹)
 产品名
@@ -119,7 +172,7 @@ license.dat文件所在的文件夹(建议创建独立存放license的文件夹)
 失败"FALT"
 string ReadLicnese(string,string)
 
-3.获取过期时间(不验证签名)
+5.获取过期时间(不验证签名)
 入参:
 license.dat文件所在的文件夹(建议创建独立存放license的文件夹)
 产品名

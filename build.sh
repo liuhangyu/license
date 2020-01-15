@@ -43,14 +43,14 @@ packLicenseMgr() {
         exit -1
     fi
 
-    mkdir -p  binPack/licensemgr-v$BUILD_VERSION
-    cp licensemgr binPack/licensemgr-v$BUILD_VERSION
-    cp licensemgr.exe binPack/licensemgr-v$BUILD_VERSION
-    cp licensemgr.macho binPack/licensemgr-v$BUILD_VERSION
+    mkdir -p  binPack/licensemgr-$BUILD_VERSION
+    cp licensemgr binPack/licensemgr-$BUILD_VERSION
+    cp licensemgr.exe binPack/licensemgr-$BUILD_VERSION
+    cp licensemgr.macho binPack/licensemgr-$BUILD_VERSION
     cd binPack
     # tar -zcvf licensemgr.tar.gz licensemgr
-    zip -r licensemgr-v$BUILD_VERSION.zip licensemgr-v$BUILD_VERSION
-    rm -rf licensemgr-v$BUILD_VERSION
+    zip -r licensemgr-$BUILD_VERSION.zip licensemgr-$BUILD_VERSION
+    rm -rf licensemgr-$BUILD_VERSION
     cd $ROOT_PATH
 }
 
@@ -59,10 +59,11 @@ packCli() {
         echo  binPack" dir not exist"
         exit -1
     fi
-    mkdir -p binPack/license
-    cp tools/linklib/libplugin.so binPack/license
-    cp tools/linklib/libshared.so binPack/license
-    cp tools/linklib/libshared.h binPack/license
+    mkdir -p binPack/license/plugin
+    mkdir -p binPack/license/shared
+    cp tools/linklib/libplugin.so binPack/license/plugin/liblicense.so
+    cp tools/linklib/libshared.so binPack/license/shared/liblicense.so
+    cp tools/linklib/libshared.h binPack/license/shared/libshared.h
 
     cp tools/register/register binPack/license
     cp tools/register/register.exe binPack/license

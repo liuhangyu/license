@@ -18,6 +18,7 @@ chkplugin:
 	@echo "Done build"
 
 run:
+	export LD_LIBRARY_PATH=../linklib
 	./chkplugin -l ../register  -lib ../linklib/libplugin.so -p switch-directory-chain
 	./chkshard  "../register"  "switch-directory-chain" "../linklib/libshared.so"
 

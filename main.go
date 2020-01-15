@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/base64"
 	"encoding/json"
+	"encoding/xml"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -23,9 +24,26 @@ const (
 	DataDir          = "data"
 )
 
+var (
+	LicenseID                   = "LicenseID"
+	ProductName                 = "ProductName"
+	EndTime                     = "EndTime"
+	kvMap       map[string]bool = map[string]bool{
+		LicenseID:   true,
+		ProductName: true,
+		EndTime:     true,
+	}
+)
+
 type Products struct {
 	ProductExplan string
 	ProductName   string
+}
+
+type AttrKV struct {
+	Desc string
+	Key  string
+	Val  string
 }
 
 var (
@@ -48,11 +66,12 @@ var (
 	}
 )
 
-func SelectProduct() (string, error) {
+func SelectProduct() (string, string, error) {
 	var (
-		index      int
-		err        error
-		retProName string
+		index         int
+		err           error
+		productExplan string
+		productName   string
 	)
 
 	fmt.Printf("%s\n", "请选择需要激活的产品(输入数字):")
@@ -75,20 +94,21 @@ func SelectProduct() (string, error) {
 
 		index, err = strconv.Atoi(inputString)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 
 		if index <= 0 || index > len(products) {
-			return "", fmt.Errorf("invalid input, please input 1 ~ %d number", len(products))
+			return "", "", fmt.Errorf("invalid input, please input 1 ~ %d number", len(products))
 		}
 
 		fmt.Println()
 		fmt.Printf("你选择的产品是: %s\n", products[index-1].ProductExplan)
 		fmt.Println()
-		retProName = products[index-1].ProductName
+		productName = products[index-1].ProductName
+		productExplan = products[index-1].ProductExplan
 	}
 
-	return retProName, nil
+	return productName, productExplan, nil
 }
 
 func InputExpiresTime() (int64, error) {
@@ -226,6 +246,145 @@ func ShowActiveCode(dir, fileName, uuid string) {
 	// fmt.Println(string(licenseActive))
 }
 
+func ReadCustomKV(productName string) ([]AttrKV, error) {
+	type Option struct {
+		XMLName xml.Name `xml:"option"`
+		Desc    string   `xml:"desc"`
+		Key     string   `xml:"key"`
+		Value   string   `xml:"val"`
+	}
+
+	type XMLProduct struct {
+		XMLName xml.Name `xml:"options"`
+		Version string   `xml:"version,attr"`
+		Options []Option `xml:"option"`
+	}
+
+	filePath := filepath.Join(DataDir, strings.Join([]string{productName, ".xml"}, ""))
+	if public.Exists(filePath) {
+		var (
+			attr   = XMLProduct{}
+			attrKV []AttrKV
+		)
+
+		fd, err := os.OpenFile(filePath, os.O_RDONLY, 0644)
+		if err != nil {
+			return nil, err
+		}
+		defer fd.Close()
+
+		attrKVBytes, err := ioutil.ReadAll(fd)
+		if err != nil {
+			return nil, err
+		}
+
+		err = xml.Unmarshal(attrKVBytes, &attr)
+		if err != nil {
+			return nil, err
+		}
+
+		// fmt.Printf("%s特性选择:\n", productExplan)
+		for i := 0; i < len(attr.Options); i++ {
+			// fmt.Println(i+1, attr.Options[i].Desc, attr.Options[i].Key, attr.Options[i].Value)
+			attrKV = append(attrKV, AttrKV{Desc: attr.Options[i].Desc, Key: attr.Options[i].Key, Val: attr.Options[i].Value})
+		}
+		// fmt.Println("请输入数字序号,以分号间隔:")
+		return attrKV, nil
+	} else {
+		fd, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0644)
+		if err != nil {
+			return nil, err
+		}
+		defer fd.Close()
+
+		attr := &XMLProduct{
+			Version: "1",
+		}
+
+		attr.Options = append(attr.Options, Option{
+			Desc:  "示例配置",
+			Key:   "key1",
+			Value: "val1",
+		})
+
+		output, err := xml.MarshalIndent(attr, "", "    ")
+		if err != nil {
+			fmt.Println(err)
+			return nil, err
+		}
+
+		_, err = fd.Write([]byte(xml.Header))
+		if err != nil {
+			return nil, err
+		}
+		_, err = fd.Write(output)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return nil, nil
+}
+
+func SelectCustomKV(productExplan string, kv []AttrKV) ([]AttrKV, error) {
+	var (
+		arrayIdx []int
+		kvs      []AttrKV
+	)
+
+	if kv != nil {
+		fmt.Printf("%s启用配置选择(请输入数字序号,以分号间隔,跳过按回车):\n", productExplan)
+		for i := 0; i < len(kv); i++ {
+			fmt.Println(i+1, kv[i].Desc)
+		}
+
+		input, err := inputReader.ReadString('\n')
+		if err != nil {
+			return nil, err
+		}
+		defer inputReader.Reset(os.Stdin)
+
+		inputString := strings.TrimSpace(input)
+
+		if inputString != "" {
+			if strings.HasPrefix(inputString, "q") {
+				os.Exit(0)
+			}
+
+			arrayIndx := strings.Split(inputString, ",")
+			for i := 0; i < len(arrayIndx); i++ {
+				num := strings.TrimSpace(arrayIndx[i])
+				if num == "" {
+					continue
+				}
+
+				idx, err := strconv.Atoi(num)
+				if err != nil {
+					return nil, err
+				}
+				if idx <= 0 || idx > len(kv) {
+					return nil, fmt.Errorf("输入不能小于等于0或大于%d", len(kv))
+				}
+
+				arrayIdx = append(arrayIdx, idx)
+			}
+
+			arrayIdx = public.RemoveDuplicate(arrayIdx)
+
+			fmt.Printf("\n你选择的是%v,启用的配置是:\n", arrayIdx)
+			for _, indx := range arrayIdx {
+				fmt.Printf("%d %s\n", indx, kv[indx-1].Desc)
+				kvs = append(kvs, kv[indx-1])
+			}
+			fmt.Println()
+		}
+
+		return kvs, nil
+	}
+
+	fmt.Println()
+	return nil, nil
+}
+
 func IsQuit() bool {
 	input, err := inputReader.ReadString('\n')
 	if err != nil {
@@ -301,10 +460,12 @@ func LoadConfig() ([]*Products, error) {
 
 func main() {
 	var (
-		err         error
-		productName string
-		expiresAt   int64
-		machineID   string
+		err           error
+		productName   string
+		productExplan string
+		expiresAt     int64
+		machineID     string
+		kv            []AttrKV
 	)
 	flag.Parse()
 
@@ -318,7 +479,7 @@ func main() {
 	inputReader = bufio.NewReader(os.Stdin)
 
 	for {
-		productName, err = SelectProduct()
+		productName, productExplan, err = SelectProduct()
 		if err != nil {
 			fmt.Println(err.Error())
 			continue
@@ -330,14 +491,20 @@ func main() {
 		break
 	}
 
+	attrKV, err := ReadCustomKV(productName)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
 	for {
-		expiresAt, err = InputExpiresTime()
-		if err != nil {
-			fmt.Println(err.Error())
-			continue
+		if len(attrKV) == 1 && attrKV[0].Desc == "示例配置" {
+			break
 		}
 
-		if expiresAt <= 0 {
+		kv, err = SelectCustomKV(productExplan, attrKV)
+		if err != nil {
+			fmt.Println(err.Error())
 			continue
 		}
 		break
@@ -356,6 +523,19 @@ func main() {
 		break
 	}
 
+	for {
+		expiresAt, err = InputExpiresTime()
+		if err != nil {
+			fmt.Println(err.Error())
+			continue
+		}
+
+		if expiresAt <= 0 {
+			continue
+		}
+		break
+	}
+
 	alg, err := public.GetNonEquAlgorthm([]byte(public.ECDSA_PRIVATE), []byte(public.ECDSA_PUBLICKEY))
 	if err != nil {
 		fmt.Println(err.Error())
@@ -367,7 +547,15 @@ func main() {
 	//定义License HEAD KV
 	uuid := public.GetUUID()
 	expiresTime := time.Now().Add(duration)
-	customKV := map[string]string{"LicenseID": uuid, "ProductName": productName, "EndTime": expiresTime.Format(time.RFC3339)}
+	customKV := map[string]string{LicenseID: uuid, ProductName: productName, EndTime: expiresTime.Format(time.RFC3339)}
+
+	for _, v := range kv {
+		if _, ok := kvMap[v.Key]; ok {
+			fmt.Printf("模板定义字段%s与系统定义字段冲突\n", v.Key)
+			return
+		}
+		customKV[v.Key] = v.Val
+	}
 
 	//构造license结构
 	licenseIns := public.GenerateLicense(uuid, productName, machineID, expiresTime.Unix(), customKV)
