@@ -117,7 +117,7 @@ func InputExpiresTime() (int64, error) {
 		expiresAt int64
 	)
 
-	fmt.Printf("%s\n", "请输入过期时间,例如12天:12d (单位:天[d] 分钟[m] 秒[s] 年[y]):")
+	fmt.Printf("%s\n", "请输入过期时间(格式:数字+单位,例如12d, 单位:天[d] 分钟[m] 秒[s] 年[y]):")
 	input, err := inputReader.ReadString('\n')
 	if err != nil {
 		return 0, err
@@ -332,7 +332,7 @@ func SelectCustomKV(productExplan string, kv []AttrKV) ([]AttrKV, error) {
 	)
 
 	if kv != nil {
-		fmt.Printf("%s启用配置选择(请输入数字序号,以分号间隔,跳过按回车):\n", productExplan)
+		fmt.Printf("%s启用配置选择(请输入数字序号,以逗号间隔,跳过按回车):\n", productExplan)
 		for i := 0; i < len(kv); i++ {
 			fmt.Println(i+1, kv[i].Desc)
 		}
