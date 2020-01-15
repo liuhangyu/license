@@ -16,7 +16,7 @@ var (
 
 func init() {
 	flag.StringVar(&l, "l", "../cli", "license.dat directory path")
-	flag.StringVar(&lib, "lib", "../linklib/libplugin.so", "libauth.so file path")
+	flag.StringVar(&lib, "lib", "../linklib/liblicense.so", "libauth.so file path")
 	flag.StringVar(&p, "p", "switch-directory-chain", "product name ")
 	flag.Usage = usage
 }
@@ -53,7 +53,7 @@ func main() {
 	}
 
 	if lib == "" {
-		fmt.Println("please input libplugin.so file path")
+		fmt.Println("please input liblicense.so file path")
 		return
 	}
 

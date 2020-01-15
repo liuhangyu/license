@@ -13,9 +13,8 @@ BUILD_NAME      := switch-license
 
 
 all: shard plugin
-
 clean:
-	rm -rf ./libshared.so ./libshared.h ./libplugin.so ./libshared.dylib
+	rm -rf ./shared/liblicense.so ./shared/liblicense.h  ./shared/liblicense.dylib  ./plugin/liblicense.so
 	@echo "Done clean"
 
 shard:
@@ -28,7 +27,7 @@ ifeq ($(shell uname), Linux)
     -X '${VERSION_DIR}.buildCommitID=${BUILD_COMMITID}' \
     -X '${VERSION_DIR}.buildTime=${BUILD_TIME}' \
     " \
-	-buildmode=c-shared -o libshared.so  libshared.go
+	-buildmode=c-shared -o $(PWD)/shared/liblicense.so  $(PWD)/shared/libshared.go
 else ifeq ($(shell uname), Darwin) 
 	go build -ldflags \
     " \
@@ -38,20 +37,20 @@ else ifeq ($(shell uname), Darwin)
     -X '${VERSION_DIR}.buildCommitID=${BUILD_COMMITID}' \
     -X '${VERSION_DIR}.buildTime=${BUILD_TIME}' \
     " \
-	-buildmode=c-shared -o libshared.dylib  libshared.go
+	-buildmode=c-shared -o $(PWD)/shared/liblicense.dylib  $(PWD)/shared/libshared.go
 endif
 	@echo "Done build"
 
 plugin:
 	go build -ldflags \
-    " \
-    -X '${VERSION_DIR}.buildVersion=${BUILD_VERSION}' \
-    -X '${VERSION_DIR}.buildName=${BUILD_NAME}' \
-    -X '${VERSION_DIR}.buildBranch=${BUILD_BRANCH}' \
-    -X '${VERSION_DIR}.buildCommitID=${BUILD_COMMITID}' \
-    -X '${VERSION_DIR}.buildTime=${BUILD_TIME}' \
-    " \
-	-gcflags=-trimpath=$GOPATH -asmflags=-trimpath=$GOPATH -ldflags "-w -s" -buildmode=plugin -o libplugin.so  libplugin.go
+	" \
+	-X '${VERSION_DIR}.buildVersion=${BUILD_VERSION}' \
+	-X '${VERSION_DIR}.buildName=${BUILD_NAME}' \
+	-X '${VERSION_DIR}.buildBranch=${BUILD_BRANCH}' \
+	-X '${VERSION_DIR}.buildCommitID=${BUILD_COMMITID}' \
+	-X '${VERSION_DIR}.buildTime=${BUILD_TIME}' \
+	" \
+    -buildmode=plugin -o  $(PWD)/plugin/liblicense.so $(PWD)/plugin/libplugin.go
 	@echo "Done build"
 
-.PHONY: clean
+.PHONY: clean all plugin shard

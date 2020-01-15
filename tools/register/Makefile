@@ -15,7 +15,7 @@ BUILD_NAME      := switch-license
 all: linux win64 mac
 
 clean:
-	rm -rf ./register ./register.exe ./register.macho ./license.dat
+	rm -rf ./register ./register.exe ./register.app ./license.dat
 	@echo "Done clean"
 
 linux:
@@ -51,7 +51,7 @@ mac:
     -X '${VERSION_DIR}.buildCommitID=${BUILD_COMMITID}' \
     -X '${VERSION_DIR}.buildTime=${BUILD_TIME}' \
     " \
-	-o register.macho main.go
+	-o register.app main.go
 	@echo "Done build"
  
 .PHONY: clean
