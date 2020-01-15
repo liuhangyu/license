@@ -25,15 +25,25 @@ func usage() {
 	flag.PrintDefaults()
 }
 
-type License struct {
-	LicenseUUID string                 `json:"licensever,omitempty"`  //license 唯一编号
-	ConfigVer   uint32                 `json:"configver,omitempty"`   //配置版本
-	ProductName string                 `json:"productname,omitempty"` //产品名称
-	MachineID   string                 `json:"machineid,omitempty"`   //机器ID
-	ExpiresAt   int64                  `json:"expiresat,omitempty"`   //过期时间
-	IssuedAt    int64                  `json:"issuedat,omitempty"`    //签发时间
-	CustomKV    map[string]interface{} `json:"customkv,omitempty"`
-}
+var (
+	ErrList = map[int]string{
+		0:   "uninitialized object",
+		-1:  "unknown error",
+		-2:  "dir does not exist",
+		-3:  "new watcher object failed",
+		-4:  "watcher add dir failed",
+		-5:  "failed to load public key",
+		-6:  "reading authorization file failed",
+		-7:  "decode authorization file failed",
+		-8:  "failed to verify signature",
+		-9:  "unmarshal license object failed",
+		-10: "failed to get machine code",
+		-11: "product name does not match",
+		-12: "license is expired",
+		-13: "license used before issued",
+		-14: "machine id does not match",
+	}
+)
 
 func main() {
 	flag.Parse()
@@ -53,6 +63,22 @@ func main() {
 		return
 	}
 
+	//创建license对象
+	{
+		NewLicenseFunc, err := plugin.Lookup("NewLicense")
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+
+		retSult := NewLicenseFunc.(func(string, string, string) string)(l, p, "./license.log")
+		if retSult != "" {
+			fmt.Printf("创建License对象失败,%s", retSult)
+			return
+		}
+		fmt.Println("创建License对象成功")
+	}
+
 	//验证license
 	{
 		VerifyLicenseFunc, err := plugin.Lookup("VerifyLicense")
@@ -61,31 +87,13 @@ func main() {
 			return
 		}
 
-		ret := VerifyLicenseFunc.(func(string, string) int)(l, p)
-		if ret == -1 {
-			fmt.Println("验证失败")
+		errCode := VerifyLicenseFunc.(func(string, string) int)(l, p)
+		if errCode <= 0 {
+			fmt.Printf("验证失败,%d, %s\n", errCode, ErrList[errCode])
 			return
 		}
 		fmt.Println("验证成功")
 	}
-
-	// //验证license while-test
-	// {
-	// 	VerifyLicenseFunc, err := plugin.Lookup("VerifyLicense")
-	// 	if err != nil {
-	// 		fmt.Println(err.Error())
-	// 		return
-	// 	}
-	// 	for {
-	// 		time.Sleep(time.Second * 1)
-	// 		ret := VerifyLicenseFunc.(func(string, string) int)(l, p)
-	// 		if ret == -1 {
-	// 			fmt.Println("验证失败")
-	// 			continue
-	// 		}
-	// 		fmt.Println("验证成功")
-	// 	}
-	// }
 
 	//读取license配置文件
 	{
@@ -101,39 +109,16 @@ func main() {
 			return
 		}
 
-		l := new(License)
-		if err := json.Unmarshal([]byte(ret), l); err != nil {
+		kvs := new(map[string]interface{})
+		if err := json.Unmarshal([]byte(ret), kvs); err != nil {
 			fmt.Println(err.Error())
 			return
 		}
 
-		fmt.Printf("%+v", *l)
-		fmt.Println()
+		for k, v := range *kvs {
+			fmt.Printf("k:%s, v:%s\n", k, v.(string))
+		}
 	}
-
-	// //while-test
-	// {
-	// 	ReadLicneseFunc, err := plugin.Lookup("ReadLicnese")
-	// 	if err != nil {
-	// 		fmt.Println(err.Error())
-	// 		return
-	// 	}
-	// 	for {
-	// 		time.Sleep(time.Second * 1)
-	// 		ret := ReadLicneseFunc.(func(string, string) string)(l, p)
-	// 		if ret == "FAIL" {
-	// 			fmt.Println(ret)
-	// 			continue
-	// 		}
-	// 		l := new(License)
-	// 		if err := json.Unmarshal([]byte(ret), l); err != nil {
-	// 			fmt.Println(err.Error())
-	// 			continue
-	// 		}
-	// 		fmt.Printf("%+v", *l)
-	// 		fmt.Println()
-	// 	}
-	// }
 
 	//查询过期时间
 	{
@@ -151,26 +136,144 @@ func main() {
 		fmt.Println("GetExpireSecFunc, 剩余秒数:", willExpireSec, time.Unix(willExpireSec+time.Now().Unix(), 0).Format("2006-01-02 15:04:05"))
 	}
 
-	// //while-test
-	// {
-	// 	GetExpireSecFunc, err := plugin.Lookup("GetExpireSec")
-	// 	if err != nil {
-	// 		fmt.Println(err.Error())
-	// 		return
-	// 	}
-	// 	for {
-	// 		time.Sleep(time.Second * 1)
-	// 		willExpireSec := GetExpireSecFunc.(func(string, string) int64)(l, p)
-	// 		if willExpireSec == -1 {
-	// 			fmt.Println("fail")
-	// 			continue
-	// 		}
-	// 		fmt.Println(GetExpireSecFunc, willExpireSec)
-	// 	}
-	// }
+	//销毁license对象
+	{
+		FreeLicenseFunc, err := plugin.Lookup("FreeLicense")
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+
+		retSult := FreeLicenseFunc.(func() string)()
+		if retSult != "" {
+			fmt.Printf("销毁License对象失败,%s", retSult)
+			return
+		}
+		fmt.Println("销毁License对象成功")
+	}
+	fmt.Println()
 }
 
 /*
 2020年1月10号
 sudo date -s "01/10/2020 13:30:00"
 */
+
+// func main() {
+// 	flag.Parse()
+// 	if l == "" {
+// 		fmt.Println("please input license.dat file path")
+// 		return
+// 	}
+
+// 	if lib == "" {
+// 		fmt.Println("please input libplugin.so file path")
+// 		return
+// 	}
+
+// 	plugin, err := plugin.Open(lib)
+// 	if err != nil {
+// 		fmt.Println(err.Error())
+// 		return
+// 	}
+
+// 	//创建license对象
+// 	{
+// 		NewLicenseFunc, err := plugin.Lookup("NewLicense")
+// 		if err != nil {
+// 			fmt.Println(err.Error())
+// 			return
+// 		}
+
+// 		retSult := NewLicenseFunc.(func(string, string, string) string)(l, p, "./license.log")
+// 		if retSult != "" {
+// 			fmt.Printf("创建License对象失败,%s", retSult)
+// 			return
+// 		}
+// 		fmt.Println("创建License对象成功")
+// 	}
+
+// 	//验证license while-test
+// 	{
+// 		VerifyLicenseFunc, err := plugin.Lookup("VerifyLicense")
+// 		if err != nil {
+// 			fmt.Println(err.Error())
+// 			return
+// 		}
+// 		for {
+// 			time.Sleep(time.Second * 1)
+// 			errCode := VerifyLicenseFunc.(func(string, string) int)(l, p)
+// 			if errCode <= 0 {
+// 				fmt.Printf("验证失败,%d, %s\n", errCode, ErrList[errCode])
+// 				continue
+// 			}
+// 			fmt.Println("验证成功")
+// 		}
+// 	}
+
+// 	// 读取license配置文件
+// 	{
+// 		ReadLicneseFunc, err := plugin.Lookup("ReadLicnese")
+// 		if err != nil {
+// 			fmt.Println(err.Error())
+// 			return
+// 		}
+// 		for {
+// 			time.Sleep(time.Second * 1)
+// 			ret := ReadLicneseFunc.(func(string, string) string)(l, p)
+// 			if ret == "FAIL" {
+// 				fmt.Println(ret)
+// 				continue
+// 			}
+// 			kvs := new(map[string]interface{})
+// 			if err := json.Unmarshal([]byte(ret), kvs); err != nil {
+// 				fmt.Println(err.Error())
+// 				continue
+// 			}
+
+// 			for k, v := range *kvs {
+// 				fmt.Printf("k:%s, v:%s\n", k, v.(string))
+// 			}
+// 		}
+// 	}
+
+// 	//查询过期时间
+// 	{
+// 		GetExpireSecFunc, err := plugin.Lookup("GetExpireSec")
+// 		if err != nil {
+// 			fmt.Println(err.Error())
+// 			return
+// 		}
+// 		for {
+// 			time.Sleep(time.Second * 1)
+// 			willExpireSec := GetExpireSecFunc.(func(string, string) int64)(l, p)
+// 			if willExpireSec == -1 {
+// 				fmt.Println("FAIL")
+// 				continue
+// 			}
+// 			fmt.Println(GetExpireSecFunc, willExpireSec)
+// 		}
+// 	}
+
+// 	//销毁license对象
+// 	{
+// 		FreeLicenseFunc, err := plugin.Lookup("FreeLicense")
+// 		if err != nil {
+// 			fmt.Println(err.Error())
+// 			return
+// 		}
+
+// 		retSult := FreeLicenseFunc.(func() string)()
+// 		if retSult != "" {
+// 			fmt.Printf("销毁License对象失败,%s", retSult)
+// 			return
+// 		}
+// 		fmt.Println("销毁License对象成功")
+// 	}
+// 	fmt.Println()
+// }
+
+// /*
+// 2020年1月10号
+// sudo date -s "01/10/2020 13:30:00"
+// */

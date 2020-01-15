@@ -491,19 +491,6 @@ func main() {
 		break
 	}
 
-	for {
-		expiresAt, err = InputExpiresTime()
-		if err != nil {
-			fmt.Println(err.Error())
-			continue
-		}
-
-		if expiresAt <= 0 {
-			continue
-		}
-		break
-	}
-
 	attrKV, err := ReadCustomKV(productName)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -531,6 +518,19 @@ func main() {
 		}
 
 		if machineID == "" {
+			continue
+		}
+		break
+	}
+
+	for {
+		expiresAt, err = InputExpiresTime()
+		if err != nil {
+			fmt.Println(err.Error())
+			continue
+		}
+
+		if expiresAt <= 0 {
 			continue
 		}
 		break

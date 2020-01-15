@@ -1,8 +1,0 @@
-[shared]2020/01/14 19:53:24.338081 libshared.go:39: license init 
-AppInfo:
-	Name: 	   switch-license
-	Version:   1.2.0
-	Branch:    master
-	CommitID:  740f028
-	BuildTime: 2020-01-14 19:47:46
-

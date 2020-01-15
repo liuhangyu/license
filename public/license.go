@@ -8,13 +8,8 @@ import (
 	"time"
 )
 
-const (
-	CONFIGVERSION = 1
-)
-
 type License struct {
 	LicenseUUID string            `json:"licensever,omitempty"`  //license 唯一编号
-	ConfigVer   uint32            `json:"configver,omitempty"`   //配置版本
 	ProductName string            `json:"productname,omitempty"` //产品名称
 	MachineID   string            `json:"machineid,omitempty"`   //机器ID
 	ExpiresAt   int64             `json:"expiresat,omitempty"`   //过期时间
@@ -25,7 +20,6 @@ type License struct {
 func GenerateLicense(uuid string, productName string, machineID string, expires int64, kv map[string]string) *License {
 	return &License{
 		LicenseUUID: uuid,
-		ConfigVer:   CONFIGVERSION,
 		ProductName: productName,
 		MachineID:   machineID,
 		ExpiresAt:   expires,
@@ -41,7 +35,7 @@ func VerifyLicense(productName string, machine string, licenseBytes []byte, isVe
 	}
 
 	if isVerify {
-		err := l.Valid(CONFIGVERSION, productName, machine)
+		err := l.Valid(productName, machine)
 		if err != nil {
 			return nil, err
 		}
@@ -50,34 +44,29 @@ func VerifyLicense(productName string, machine string, licenseBytes []byte, isVe
 	return l, nil
 }
 
-func (c *License) Valid(configVer uint32, productName string, machine string) error {
+func (c *License) Valid(productName string, machine string) error {
 	var vErr error
 	now := time.Now().Unix()
 
-	//比较配置版本
-	if c.CompareConfigVer(configVer) == false {
-		vErr = fmt.Errorf("config versions do not match")
-	}
-
 	//比较产品名称
 	if c.CompareProductName(productName) == false {
-		vErr = fmt.Errorf("product name does not match")
+		vErr = ErrNoMatchProName
 	}
 
 	//比较过期时间
 	if c.VerifyExpiresAt(now, false) == false {
 		delta := time.Unix(now, 0).Sub(time.Unix(c.ExpiresAt, 0))
-		vErr = fmt.Errorf("license is expired by %v", delta)
+		vErr = ErrLicenseExpired.SetErrText(fmt.Sprintf("license is expired by %v", delta))
 	}
 
 	//比较签发时间
 	if c.VerifyIssuedAt(now, false) == false {
-		vErr = fmt.Errorf("license used before issued")
+		vErr = ErrBeforeIssued
 	}
 
 	//比较机器是否与license匹配
 	if c.CompareMachine(machine) == false {
-		vErr = fmt.Errorf("machine id does not match")
+		vErr = ErrNoMatchMachineID
 	}
 	return vErr
 }
@@ -94,11 +83,6 @@ func (c *License) GetExpiresAt() int64 {
 
 func (c *License) GetEndTime() string {
 	return time.Unix(c.ExpiresAt, 0).String()
-}
-
-//比较配置版本
-func (c *License) CompareConfigVer(configVer uint32) bool {
-	return c.ConfigVer == configVer
 }
 
 //比较产品名

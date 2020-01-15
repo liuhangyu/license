@@ -33,6 +33,13 @@ var (
 	gLicenseIns *License
 )
 
+//export NewLicense
+/*
+创建license对象
+dir 存放license.dat的文件夹(监控文件夹使用)
+productName 在二进制中每个产品的英文名称
+logPath 指定路径的license.log路径
+*/
 func NewLicense(dir string, productName string, logPath string) string {
 	var (
 		mErr        error
@@ -49,42 +56,42 @@ func NewLicense(dir string, productName string, logPath string) string {
 		//构造验证签名对象
 		alg, err := public.GetNonEquAlgorthm(nil, []byte(public.ECDSA_PUBLICKEY))
 		if err != nil {
-			return nil, err
+			return nil, public.ErrLoadPubKey.SetErr(err)
 		}
 
 		//读取license.dat文件
 		licenseFilePath := path.Join(dir, LiceseFileName)
 		licenseBytes, err := public.ReadLicensePem(licenseFilePath)
 		if err != nil {
-			return nil, err
+			return nil, public.ErrReadAuthFile.SetErr(err)
 		}
 
 		{
 			//验证pem格式
 			if pemBlock, _ = pem.Decode(licenseBytes); pemBlock == nil {
-				return nil, fmt.Errorf("%s", "license must be PEM")
+				return nil, public.ErrDecodeAuthFile
 			}
 
 			//验证签名
 			content, err = alg.VerifySign(string(pemBlock.Bytes))
 			if err != nil {
-				return nil, err
+				return nil, public.ErrVerifySign.SetErr(err)
 			}
 
 			//获取license对象
 			license, err := public.ToLicense(content)
 			if err != nil {
-				return nil, err
+				return nil, public.ErrUnmarshalLiObj.SetErr(err)
 			}
 
 			//获取机器ID
 			machineID, err := public.GetMachineID()
 			if err != nil {
-				return nil, err
+				return nil, public.ErrGetMachineCode.SetErr(err)
 			}
 
 			//对比过期时间以及机器ID
-			err = license.Valid(LinkLibVersion, proName, machineID)
+			err = license.Valid(proName, machineID)
 			if err != nil {
 				return nil, err
 			}
@@ -108,8 +115,9 @@ func NewLicense(dir string, productName string, logPath string) string {
 	}
 
 	//初始化日志
-	mLicenseIns.ErrLog = log.New(logFile, "[license]", log.LstdFlags|log.Lshortfile|log.LstdFlags|log.Lmicroseconds)
+	mLicenseIns.ErrLog = log.New(mLicenseIns.LogFile, "[License]", log.LstdFlags|log.Lshortfile|log.LstdFlags|log.Lmicroseconds)
 	mLicenseIns.ErrLog.Println("License", public.GetAppInfo())
+	mLicenseIns.Error = nil
 
 	mLicenseIns.Once.Do(func() {
 		var (
@@ -118,27 +126,27 @@ func NewLicense(dir string, productName string, logPath string) string {
 
 		for {
 			if public.Exists(dir) == false {
-				mErr = public.New(-1, fmt.Sprintf("%s dir does not exist", dir))
+				mLicenseIns.Error = public.ErrDirNoExist.SetErrText(dir)
 				break
 			}
 
 			//启动目录监听
 			mLicenseIns.Watcher, err = fsnotify.NewWatcher()
 			if err != nil {
-				mErr = public.New(-2, fmt.Sprintf("new watcher err %s", err.Error()))
+				mLicenseIns.Error = public.ErrNewWatcher.SetErr(err)
 				break
 			}
 
 			//监控目录
 			err = mLicenseIns.Watcher.Add(dir)
 			if err != nil {
-				mErr = public.New(-3, fmt.Sprintf("watcher add dir err %s", err.Error()))
+				mLicenseIns.Error = public.ErrWatcherAdd.SetErr(err)
 				break
 			}
 			break
 		}
-		if mErr != nil {
-			mLicenseIns.ErrLog.Println(mErr.Error())
+		if mLicenseIns.Error != nil {
+			mLicenseIns.ErrLog.Println(mLicenseIns.Error.Error())
 			if mLicenseIns.Watcher != nil {
 				mLicenseIns.Watcher.Close()
 				mLicenseIns.Watcher = nil
@@ -152,67 +160,84 @@ func NewLicense(dir string, productName string, logPath string) string {
 
 		licenseBytes, err := verifyLicense(dir, productName)
 		if err != nil {
-			mErr = public.New(-4, err.Error())
-			mLicenseIns.ErrLog.Println(mErr.Error())
-		} else {
-			mLicenseIns.LicenseContent = licenseBytes
-			mLicenseIns.IsValidLicense = true
+			if iErr, ok := err.(*public.ErrorMsg); ok {
+				mLicenseIns.Error = iErr
+			} else {
+				mLicenseIns.Error = public.ErrUnKnown.SetErr(err)
+			}
+
+			mLicenseIns.ErrLog.Println(err.Error())
 		}
+		mLicenseIns.LicenseContent = licenseBytes
+		mLicenseIns.IsValidLicense = true
+		gLicenseIns = mLicenseIns
 
 		go func() {
 			for {
 				select {
-				case event, ok := <-mLicenseIns.Watcher.Events:
+				case event, ok := <-gLicenseIns.Watcher.Events:
 					if !ok {
 						return
 					}
 
 					if strings.Contains(event.Name, LiceseFileName) == false {
-						mLicenseIns.ErrLog.Printf("event, event:%v, name:%s\n", event, event.Name)
+						gLicenseIns.ErrLog.Printf("event, event:%v, name:%s\n", event, event.Name)
 						continue
 					} else {
 						if event.Op&fsnotify.Create == fsnotify.Create { //no modified
-							//mLicenseIns.ErrLog.Printf("event modified file, event:%v, name:%s\n", event, event.Name)
+							//gLicenseIns.ErrLog.Printf("event modified file, event:%v, name:%s\n", event, event.Name)
 						} else if event.Op&fsnotify.Write == fsnotify.Write {
-							//mLicenseIns.ErrLog.Printf("event write file, event:%v, name:%s\n", event, event.Name)
+							//gLicenseIns.ErrLog.Printf("event write file, event:%v, name:%s\n", event, event.Name)
 						} else if event.Op&fsnotify.Remove == fsnotify.Remove {
-							//mLicenseIns.ErrLog.Printf("event remove file, event:%v, name:%s\n", event, event.Name)
+							//gLicenseIns.ErrLog.Printf("event remove file, event:%v, name:%s\n", event, event.Name)
 						} else {
-							errLog.Printf("event contains file, event:%v, name:%s, continue...\n", event, event.Name)
+							gLicenseIns.ErrLog.Printf("event contains file, event:%v, name:%s, continue...\n", event, event.Name)
 							continue
 						}
 					}
 
 					licenseBytes, err := verifyLicense(dir, productName)
 					if err != nil {
-						mErr = public.New(-4, err.Error())
-						mLicenseIns.LicenseContent = nil
-						mLicenseIns.IsValidLicense = false
+						gLicenseIns.ErrLog.Println(err.Error())
+
+						if iErr, ok := err.(*public.ErrorMsg); ok {
+							gLicenseIns.Error = iErr
+						} else {
+							gLicenseIns.Error = public.ErrUnKnown.SetErr(err)
+						}
+
+						gLicenseIns.LicenseContent = nil
+						gLicenseIns.IsValidLicense = false
 					} else {
-						mLicenseIns.LicenseContent = licenseBytes
-						mLicenseIns.IsValidLicense = true
+						gLicenseIns.Error = nil
+						gLicenseIns.LicenseContent = licenseBytes
+						gLicenseIns.IsValidLicense = true
 					}
-				case err, ok := <-mLicenseIns.Watcher.Errors:
+				case err, ok := <-gLicenseIns.Watcher.Errors:
 					if !ok {
-						mLicenseIns.ErrLog.Println("close watcher")
-						mLicenseIns.IsValidLicense = false
+						gLicenseIns.ErrLog.Println("close watcher")
+						gLicenseIns.IsValidLicense = false
 						return
 					}
-					mLicenseIns.ErrLog.Println(err.Error())
+					gLicenseIns.ErrLog.Println(err.Error())
 				}
 			}
 		}()
 	})
 
-	if mErr != nil {
-		return mErr.Error()
+	if mLicenseIns.Error != nil {
+		gLicenseIns.Error = mLicenseIns.Error
+		return mLicenseIns.Error.Error()
 	} else {
-		mLicenseIns.Error = mErr.(*public.ErrorMsg)
 		gLicenseIns = mLicenseIns
 	}
 	return ""
 }
 
+//export FreeLicense
+/*
+释放license对象
+*/
 func FreeLicense() string {
 	if gLicenseIns != nil {
 		if gLicenseIns.LogFile != nil {
@@ -233,21 +258,40 @@ func FreeLicense() string {
 }
 
 //export VerifyLicense
+/*
+licenseDir 存放license.dat的文件夹(监控文件夹使用)
+productName 在二进制中每个产品的英文名称
+
+失败错误信息查看:errors.go中定义
+*/
 func VerifyLicense(licenseDir string, productName string) int {
+	var (
+		err = public.ErrNoCreateObj
+	)
+
 	if gLicenseIns != nil {
 		if gLicenseIns.Error != nil {
-			return gLicenseIns.Error.Code()
+			gLicenseIns.ErrLog.Println(gLicenseIns.Error.Error())
+			return gLicenseIns.Error.GetCode()
 		}
 
 		if gLicenseIns.IsValidLicense {
-			return 0
+			return 1
 		}
 	}
 
-	return -1
+	return err.GetCode()
 }
 
 //export ReadLicnese
+/*
+licenseDir 存放license.dat的文件夹(监控文件夹使用)
+productName 在二进制中每个产品的英文名称
+
+返回:
+失败返回"FAIL"
+成功返回定义的KV配置项
+*/
 func ReadLicnese(licenseDir string, productName string) string {
 	var (
 		pemBlock     *pem.Block
@@ -256,28 +300,26 @@ func ReadLicnese(licenseDir string, productName string) string {
 		licenseBytes []byte
 	)
 
-	// err = startWatcher(licenseDir, productName, true)
-	// if err != nil {
-	// 	errLog.Println(err.Error())
-	// 	return string("FAIL")
-	// }
+	if gLicenseIns == nil {
+		return string("FAIL")
+	}
 
 	if public.Exists(licenseDir) == false {
-		errLog.Printf("%s dir does not exist\n", licenseDir)
+		gLicenseIns.ErrLog.Printf("%s dir does not exist\n", licenseDir)
 		return string("FAIL")
 	}
 
 	for {
-		if len(licenseContent) == 0 {
+		if gLicenseIns != nil && len(gLicenseIns.LicenseContent) == 0 {
 			//读取license.dat文件
 			licenseFilePath := path.Join(licenseDir, LiceseFileName)
 			licenseBytes, err = public.ReadLicensePem(licenseFilePath)
 			if err != nil {
 				break
 			}
-			licenseContent = licenseBytes
+			gLicenseIns.LicenseContent = licenseBytes
 		} else {
-			licenseBytes = licenseContent
+			licenseBytes = gLicenseIns.LicenseContent
 		}
 
 		//验证pem格式
@@ -291,7 +333,7 @@ func ReadLicnese(licenseDir string, productName string) string {
 			break
 		}
 
-		lbytes, err = json.Marshal(license)
+		lbytes, err = json.Marshal(license.CustomKV)
 		if err != nil {
 			break
 		}
@@ -299,7 +341,7 @@ func ReadLicnese(licenseDir string, productName string) string {
 	}
 
 	if err != nil {
-		errLog.Println(err.Error())
+		gLicenseIns.ErrLog.Println(err.Error())
 		return string("FAIL")
 	}
 
@@ -307,6 +349,15 @@ func ReadLicnese(licenseDir string, productName string) string {
 }
 
 //export GetExpireSec
+/*
+licenseDir 存放license.dat的文件夹(监控文件夹使用)
+productName 在二进制中每个产品的英文名称
+
+返回值:
+0已过期
+-1失败
+>0 剩余时间(剩余未过期的秒数)
+*/
 func GetExpireSec(licenseDir string, productName string) int64 {
 	var (
 		pemBlock     *pem.Block
@@ -314,41 +365,39 @@ func GetExpireSec(licenseDir string, productName string) int64 {
 		licenseBytes []byte
 	)
 
-	// err = startWatcher(licenseDir, productName, true)
-	// if err != nil {
-	// 	errLog.Println(err.Error())
-	// 	return -1
-	// }
+	if gLicenseIns == nil {
+		return -1
+	}
 
 	if public.Exists(licenseDir) == false {
-		errLog.Printf("%s dir does not exist\n", licenseDir)
+		gLicenseIns.ErrLog.Printf("%s dir does not exist\n", licenseDir)
 		return -1
 	}
 
 	for {
-		if len(licenseContent) == 0 {
+		if gLicenseIns != nil && len(gLicenseIns.LicenseContent) == 0 {
 			//读取license.dat文件
 			licenseFilePath := path.Join(licenseDir, LiceseFileName)
 			licenseBytes, err = public.ReadLicensePem(licenseFilePath)
 			if err != nil {
-				errLog.Println(err.Error())
+				gLicenseIns.ErrLog.Println(err.Error())
 				break
 			}
-			licenseContent = licenseBytes
+			gLicenseIns.LicenseContent = licenseBytes
 		} else {
-			licenseBytes = licenseContent
+			licenseBytes = gLicenseIns.LicenseContent
 		}
 
 		//验证pem格式
 		if pemBlock, _ = pem.Decode(licenseBytes); pemBlock == nil {
 			err = fmt.Errorf("%s", "license must be PEM")
-			errLog.Println(err.Error())
+			gLicenseIns.ErrLog.Println(err.Error())
 			break
 		}
 
 		license, err := public.BytesToLicense(string(pemBlock.Bytes))
 		if err != nil {
-			errLog.Println(err.Error())
+			gLicenseIns.ErrLog.Println(err.Error())
 			break
 		}
 

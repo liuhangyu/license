@@ -59,10 +59,11 @@ packCli() {
         echo  binPack" dir not exist"
         exit -1
     fi
-    mkdir -p binPack/license
-    cp tools/linklib/libplugin.so binPack/license
-    cp tools/linklib/libshared.so binPack/license
-    cp tools/linklib/libshared.h binPack/license
+    mkdir -p binPack/license/plugin
+    mkdir -p binPack/license/shared
+    cp tools/linklib/libplugin.so binPack/license/plugin/liblicense.so
+    cp tools/linklib/libshared.so binPack/license/shared/liblicense.so
+    cp tools/linklib/libshared.h binPack/license/shared/libshared.h
 
     cp tools/register/register binPack/license
     cp tools/register/register.exe binPack/license
