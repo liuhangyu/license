@@ -84,6 +84,7 @@ int main(int argc,char *argv[])
 
   if(handle == NULL) {
     printf("%s","handle is null");
+    return 0;
   }
 
   //创建license对象
