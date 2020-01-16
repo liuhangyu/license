@@ -14,6 +14,7 @@ import (
 
 	"code.uni-ledger.com/switch/license/public"
 	"code.uni-ledger.com/switch/license/public/deplib/fsnotify"
+	lumberjack "code.uni-ledger.com/switch/license/public/deplib/gopkg.in/natefinch/lumberjack.v2"
 )
 
 const (
@@ -119,6 +120,13 @@ func NewLicense(dir string, productName string, logPath string) string {
 
 	//初始化日志
 	mLicenseIns.ErrLog = log.New(mLicenseIns.LogFile, "[License]", log.LstdFlags|log.Lshortfile|log.LstdFlags|log.Lmicroseconds)
+	mLicenseIns.ErrLog.SetOutput(&lumberjack.Logger{
+		Filename:   logPath,
+		MaxSize:    100,
+		MaxBackups: 3,
+		MaxAge:     5,
+	})
+
 	mLicenseIns.ErrLog.Println("License", public.GetAppInfo())
 	mLicenseIns.Error = nil
 
