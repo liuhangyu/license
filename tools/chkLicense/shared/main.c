@@ -4,9 +4,9 @@
 #include <stdlib.h>
 #include "liblicense.h"
 
-const char *licenseDirPath  = "../cli";
+const char *licenseDirPath  = "../../register/";
 const char *productNameString =  "switch-directory-chain";
-const char *libshardPath = "../linklib/liblicense.so";
+const char *libshardPath = "../../../linklib/plugin/liblicense.so";
 const char *licenseLogPath = "./license.log";
 
 static const char *ErrList[] = {
@@ -25,10 +25,14 @@ static const char *ErrList[] = {
 		"license is expired",
 		"license used before issued",
 		"machine id does not match",
-  NULL
+     NULL
 };
 
-
+/*
+export LD_LIBRARY_PATH=../../../linklib/shared/
+gcc -g -o main main.c -ldl -llicense -L ../../../linklib/shared  -I ../../../linklib/shared/
+./main  "../../register"  "switch-directory-chain" "../../../linklib/shared/liblicense.so"
+*/
 
 
 int main(int argc,char *argv[])

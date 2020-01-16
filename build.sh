@@ -26,7 +26,7 @@ buildRegister() {
 
 buildDll() {
     echo "begin build dll....."
-    cd tools/linklib
+    cd ./linklib
     if [ $1 == "clean" ];then
         make clean
     else
@@ -65,9 +65,9 @@ packCli() {
     fi
     mkdir -p binPack/license/plugin
     mkdir -p binPack/license/shared
-    cp tools/linklib/plugin/liblicense.so binPack/license/plugin/liblicense.so
-    cp tools/linklib/shared/liblicense.so binPack/license/shared/liblicense.so
-    cp tools/linklib/shared/liblicense.h binPack/license/shared/libshared.h
+    cp ./linklib/plugin/liblicense.so binPack/license/plugin/liblicense.so
+    cp ./linklib/shared/liblicense.so binPack/license/shared/liblicense.so
+    cp ./linklib/shared/liblicense.h binPack/license/shared/libshared.h
 
     cp tools/register/register binPack/license
     cp tools/register/register.exe binPack/license

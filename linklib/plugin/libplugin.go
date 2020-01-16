@@ -42,6 +42,9 @@ var (
 dir 存放license.dat的文件夹(监控文件夹使用)
 productName 在二进制中每个产品的英文名称
 logPath 指定路径的license.log路径
+
+成功返回空字符
+失败返回errmsg
 */
 func NewLicense(dir string, productName string, logPath string) string {
 	var (
@@ -178,7 +181,10 @@ func NewLicense(dir string, productName string, logPath string) string {
 			}
 
 			mLicenseIns.ErrLog.Println(err.Error())
+			return
 		}
+
+		mLicenseIns.Error = nil
 		mLicenseIns.LicenseContent = licenseBytes
 		mLicenseIns.IsValidLicense = true
 		mLicenseIns.Timer = time.NewTimer(time.Duration(expires+1) * time.Second)
@@ -259,8 +265,7 @@ func NewLicense(dir string, productName string, logPath string) string {
 		}()
 	})
 
-	if mLicenseIns.Error != nil {
-		gLicenseIns.Error = mLicenseIns.Error
+	if mLicenseIns != nil && mLicenseIns.Error != nil {
 		return mLicenseIns.Error.Error()
 	}
 
