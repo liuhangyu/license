@@ -238,6 +238,7 @@ func NewLicense(dir string, productName string, logPath string) *C.char {
 		return C.CString(gLicenseIns.Error.Error())
 	}
 
+	gLicenseIns = mLicenseIns
 	return C.CString("")
 }
 

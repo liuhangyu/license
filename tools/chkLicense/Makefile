@@ -3,10 +3,10 @@ export WORKDIR=$(WORKSPACE)
 export GO111MODULE=on
 
 
-all: chkshard chkplugin
+all: chkshard chkplugin realcheck
 
 clean:
-	rm -rf ./chkplugin ./chkshard ./license.log
+	rm -rf ./chkplugin ./chkshard ./realcheck ./license.log
 	@echo "Done clean"
 
 chkshard:
@@ -17,9 +17,13 @@ chkplugin:
 	go build -o chkplugin ./plugin/main.go
 	@echo "Done build"
 
+realcheck:
+	go build -o realcheck ./real/main.go
+
 run:
 	export LD_LIBRARY_PATH=../linklib/shared
 	./chkplugin -l ../register  -lib ../linklib/plugin/liblicense.so -p switch-directory-chain
 	./chkshard  "../register"  "switch-directory-chain" "../linklib/shared/liblicense.so"
+	./realcheck  -l ../register  -lib ../linklib/plugin/liblicense.so -p switch-directory-chain
 
-.PHONY: clean
+.PHONY: clean chkshard chkplugin realcheck

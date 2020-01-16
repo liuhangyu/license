@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"code.uni-ledger.com/switch/license/public"
 	"code.uni-ledger.com/switch/license/public/deplib/fsnotify"
@@ -27,6 +28,7 @@ type License struct {
 	LogFile        *os.File
 	Watcher        *fsnotify.Watcher
 	Error          *public.ErrorMsg
+	Timer          *time.Timer
 }
 
 var (
@@ -46,58 +48,59 @@ func NewLicense(dir string, productName string, logPath string) string {
 		mLicenseIns = &License{}
 	)
 
-	verifyLicense := func(dir string, proName string) ([]byte, error) {
+	verifyLicense := func(dir string, proName string) ([]byte, int64, error) {
 		var (
 			err      error
 			content  []byte
 			pemBlock *pem.Block
+			license  *public.License
 		)
 
 		//构造验证签名对象
 		alg, err := public.GetNonEquAlgorthm(nil, []byte(public.ECDSA_PUBLICKEY))
 		if err != nil {
-			return nil, public.ErrLoadPubKey.SetErr(err)
+			return nil, 0, public.ErrLoadPubKey.SetErr(err)
 		}
 
 		//读取license.dat文件
 		licenseFilePath := path.Join(dir, LiceseFileName)
 		licenseBytes, err := public.ReadLicensePem(licenseFilePath)
 		if err != nil {
-			return nil, public.ErrReadAuthFile.SetErr(err)
+			return nil, 0, public.ErrReadAuthFile.SetErr(err)
 		}
 
 		{
 			//验证pem格式
 			if pemBlock, _ = pem.Decode(licenseBytes); pemBlock == nil {
-				return nil, public.ErrDecodeAuthFile
+				return nil, 0, public.ErrDecodeAuthFile
 			}
 
 			//验证签名
 			content, err = alg.VerifySign(string(pemBlock.Bytes))
 			if err != nil {
-				return nil, public.ErrVerifySign.SetErr(err)
+				return nil, 0, public.ErrVerifySign.SetErr(err)
 			}
 
 			//获取license对象
-			license, err := public.ToLicense(content)
+			license, err = public.ToLicense(content)
 			if err != nil {
-				return nil, public.ErrUnmarshalLiObj.SetErr(err)
+				return nil, 0, public.ErrUnmarshalLiObj.SetErr(err)
 			}
 
 			//获取机器ID
 			machineID, err := public.GetMachineID()
 			if err != nil {
-				return nil, public.ErrGetMachineCode.SetErr(err)
+				return nil, 0, public.ErrGetMachineCode.SetErr(err)
 			}
 
 			//对比过期时间以及机器ID
 			err = license.Valid(proName, machineID)
 			if err != nil {
-				return nil, err
+				return nil, 0, err
 			}
 		}
 
-		return licenseBytes, nil
+		return licenseBytes, license.GetExpiresAt(), nil
 	}
 
 	saveDir := filepath.Dir(logPath)
@@ -158,7 +161,7 @@ func NewLicense(dir string, productName string, logPath string) string {
 			return
 		}
 
-		licenseBytes, err := verifyLicense(dir, productName)
+		licenseBytes, expires, err := verifyLicense(dir, productName)
 		if err != nil {
 			if iErr, ok := err.(*public.ErrorMsg); ok {
 				mLicenseIns.Error = iErr
@@ -170,6 +173,7 @@ func NewLicense(dir string, productName string, logPath string) string {
 		}
 		mLicenseIns.LicenseContent = licenseBytes
 		mLicenseIns.IsValidLicense = true
+		mLicenseIns.Timer = time.NewTimer(time.Duration(expires+1) * time.Second)
 		gLicenseIns = mLicenseIns
 
 		go func() {
@@ -196,7 +200,29 @@ func NewLicense(dir string, productName string, logPath string) string {
 						}
 					}
 
-					licenseBytes, err := verifyLicense(dir, productName)
+					licenseBytes, expires, err := verifyLicense(dir, productName)
+					if err != nil {
+						gLicenseIns.ErrLog.Println(err.Error())
+
+						if iErr, ok := err.(*public.ErrorMsg); ok {
+							gLicenseIns.Error = iErr
+						} else {
+							gLicenseIns.Error = public.ErrUnKnown.SetErr(err)
+						}
+
+						gLicenseIns.LicenseContent = nil
+						gLicenseIns.IsValidLicense = false
+					} else {
+						gLicenseIns.Error = nil
+						gLicenseIns.LicenseContent = licenseBytes
+						gLicenseIns.IsValidLicense = true
+						isSuccess := gLicenseIns.Timer.Reset(time.Duration(expires+1) * time.Second)
+						gLicenseIns.ErrLog.Println("Timer Reset", isSuccess)
+					}
+				case <-gLicenseIns.Timer.C:
+					gLicenseIns.Timer.Stop()
+					gLicenseIns.ErrLog.Println("Timer out")
+					licenseBytes, _, err := verifyLicense(dir, productName)
 					if err != nil {
 						gLicenseIns.ErrLog.Println(err.Error())
 
@@ -228,9 +254,13 @@ func NewLicense(dir string, productName string, logPath string) string {
 	if mLicenseIns.Error != nil {
 		gLicenseIns.Error = mLicenseIns.Error
 		return mLicenseIns.Error.Error()
-	} else {
-		gLicenseIns = mLicenseIns
 	}
+
+	if gLicenseIns != nil && gLicenseIns.Error != nil {
+		return gLicenseIns.Error.Error()
+	}
+
+	gLicenseIns = mLicenseIns
 	return ""
 }
 
@@ -252,6 +282,10 @@ func FreeLicense() string {
 			if err != nil {
 				return err.Error()
 			}
+		}
+
+		if gLicenseIns.Timer != nil {
+			gLicenseIns.Timer.Stop()
 		}
 	}
 	return ""
