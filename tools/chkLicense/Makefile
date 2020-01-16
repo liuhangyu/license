@@ -10,7 +10,7 @@ clean:
 	@echo "Done clean"
 
 chkshard:
-	gcc -o chkshard ./shard/main.c -ldl -llicense -L ../linklib/shared -I ../linklib/shared
+	gcc -o chkshard ./shared/main.c -ldl -llicense -L ../../linklib/shared -I ../../linklib/shared
 	@echo "Done build"
 
 chkplugin:
@@ -21,9 +21,9 @@ realcheck:
 	go build -o realcheck ./real/main.go
 
 run:
-	export LD_LIBRARY_PATH=../linklib/shared
-	./chkplugin -l ../register  -lib ../linklib/plugin/liblicense.so -p switch-directory-chain
-	./chkshard  "../register"  "switch-directory-chain" "../linklib/shared/liblicense.so"
-	./realcheck  -l ../register  -lib ../linklib/plugin/liblicense.so -p switch-directory-chain
+	export LD_LIBRARY_PATH=../../linklib/shared
+	./chkplugin -l ../register  -lib ../../linklib/plugin/liblicense.so -p switch-directory-chain
+	./chkshard  "../register"  "switch-directory-chain" "../../linklib/shared/liblicense.so"
+	./realcheck  -l ../register  -lib ../../linklib/plugin/liblicense.so -p switch-directory-chain
 
 .PHONY: clean chkshard chkplugin realcheck
