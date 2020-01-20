@@ -208,6 +208,8 @@ func NewLicense(dir string, productName string, logPath string) string {
 							//gLicenseIns.ErrLog.Printf("event write file, event:%v, name:%s\n", event, event.Name)
 						} else if event.Op&fsnotify.Remove == fsnotify.Remove {
 							//gLicenseIns.ErrLog.Printf("event remove file, event:%v, name:%s\n", event, event.Name)
+						} else if event.Op&fsnotify.Rename == fsnotify.Rename {
+							//gLicenseIns.ErrLog.Printf("event rename file, event:%v, name:%s\n", event, event.Name)
 						} else {
 							gLicenseIns.ErrLog.Printf("event contains file, event:%v, name:%s, continue...\n", event, event.Name)
 							continue
