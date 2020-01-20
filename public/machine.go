@@ -160,8 +160,8 @@ func GetFSInfo() ([]string, error) {
 				sort.Strings(fsInfoList)
 				return fsInfoList, nil
 			}
-
-			return nil, fmt.Errorf("%s", "get system file info failed from command")
+			// ubuntu can not get fsInfo UUID by blkid, can get it by /etc/fstab
+			// return nil, fmt.Errorf("%s", "get system file info failed from command")
 		}
 	}
 

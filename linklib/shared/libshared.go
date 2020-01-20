@@ -12,6 +12,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+
 	"code.uni-ledger.com/switch/license/public"
 	"code.uni-ledger.com/switch/license/public/deplib/fsnotify"
 	lumberjack "code.uni-ledger.com/switch/license/public/deplib/gopkg.in/natefinch/lumberjack.v2"
@@ -208,6 +209,8 @@ func NewLicense(dir string, productName string, logPath string) *C.char {
 							//gLicenseIns.ErrLog.Printf("event write file, event:%v, name:%s\n", event, event.Name)
 						} else if event.Op&fsnotify.Remove == fsnotify.Remove {
 							//gLicenseIns.ErrLog.Printf("event remove file, event:%v, name:%s\n", event, event.Name)
+						} else if event.Op&fsnotify.Rename == fsnotify.Rename {
+							//gLicenseIns.ErrLog.Printf("event rename file, event:%v, name:%s\n", event, event.Name)
 						} else {
 							gLicenseIns.ErrLog.Printf("event contains file, event:%v, name:%s, continue...\n", event, event.Name)
 							continue
@@ -281,7 +284,7 @@ func NewLicense(dir string, productName string, logPath string) *C.char {
 /*
 释放license对象
 */
-func FreeLicense() *C.char  {
+func FreeLicense() *C.char {
 	if gLicenseIns != nil {
 		if gLicenseIns.LogFile != nil {
 			err := gLicenseIns.LogFile.Close()
@@ -339,7 +342,7 @@ productName 在二进制中每个产品的英文名称
 失败返回"FAIL"
 成功返回定义的KV配置项
 */
-func ReadLicnese(licenseDir string, productName string)  *C.char {
+func ReadLicnese(licenseDir string, productName string) *C.char {
 	var (
 		pemBlock     *pem.Block
 		lbytes       []byte
@@ -392,7 +395,7 @@ func ReadLicnese(licenseDir string, productName string)  *C.char {
 		return C.CString("FAIL")
 	}
 
-	return  C.CString(string(lbytes))
+	return C.CString(string(lbytes))
 }
 
 //export GetExpireSec
