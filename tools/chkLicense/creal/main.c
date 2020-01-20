@@ -40,7 +40,7 @@ gcc -g -o main main.c -ldl -llicense -L ../../../linklib/shared  -I ../../../lin
 char* (*NewLicenseFunc)(GoString p0, GoString p1, GoString p2);
 char* (*FreeLicenseFunc)();
 int (*VerifyLicenseFunc)(GoString p0, GoString p1);
-char* (*ReadLicneseFunc)(GoString p0, GoString p1);
+char* (*ReadLicenseFunc)(GoString p0, GoString p1);
 long long int (*GetExpireSecFunc)(GoString p0, GoString p1);
 
 typedef struct
@@ -78,21 +78,21 @@ void *VerifyLicenseFc(void *arg){
     return NULL;
 }
 
-void *ReadLicneseFc(void *arg){
+void *ReadLicenseFc(void *arg){
     MulArg *ma = (MulArg*)arg;
 
     //读取license配置文件
-    ReadLicneseFunc = dlsym(ma->handle, "ReadLicnese");
-    if(ReadLicneseFunc == NULL) {
-        printf("ReadLicneseFunc is null\n");
+    ReadLicenseFunc = dlsym(ma->handle, "ReadLicense");
+    if(ReadLicenseFunc == NULL) {
+        printf("ReadLicenseFunc is null\n");
         pthread_exit((void *)-1);
         return NULL;
     }
 
     while(1){
         //sleep(1);    
-        char *resp = ReadLicneseFunc(ma->licensePath, ma->productName);
-        printf("ReadLicneseFunc %s\n", resp);
+        char *resp = ReadLicenseFunc(ma->licensePath, ma->productName);
+        printf("ReadLicenseFunc %s\n", resp);
         free(resp);
     }
     pthread_exit((void *)-1);
@@ -198,9 +198,9 @@ int main(int argc,char *argv[])
         exit(EXIT_FAILURE); 
     } 
 
-    if(pthread_create(&tid1, NULL, ReadLicneseFc, (void*)&mulArgs) ) 
+    if(pthread_create(&tid1, NULL, ReadLicenseFc, (void*)&mulArgs) ) 
     { 
-        perror("pthread_create ReadLicnese error "); 
+        perror("pthread_create ReadLicense error "); 
         exit(EXIT_FAILURE); 
     } 
 

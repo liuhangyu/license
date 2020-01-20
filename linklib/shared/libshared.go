@@ -333,7 +333,7 @@ func VerifyLicense(licenseDir string, productName string) C.int {
 	return C.int(err.GetCode())
 }
 
-//export ReadLicnese
+//export ReadLicense
 /*
 licenseDir 存放license.dat的文件夹(监控文件夹使用)
 productName 在二进制中每个产品的英文名称
@@ -342,7 +342,7 @@ productName 在二进制中每个产品的英文名称
 失败返回"FAIL"
 成功返回定义的KV配置项
 */
-func ReadLicnese(licenseDir string, productName string) *C.char {
+func ReadLicense(licenseDir string, productName string) *C.char {
 	var (
 		pemBlock     *pem.Block
 		lbytes       []byte

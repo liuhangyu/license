@@ -97,13 +97,13 @@ func main() {
 
 	//读取license配置文件
 	{
-		ReadLicneseFunc, err := plugin.Lookup("ReadLicnese")
+		ReadLicenseFunc, err := plugin.Lookup("ReadLicense")
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
 
-		ret := ReadLicneseFunc.(func(string, string) string)(l, p)
+		ret := ReadLicenseFunc.(func(string, string) string)(l, p)
 		if ret == "FAIL" {
 			fmt.Println(ret)
 			return
@@ -213,14 +213,14 @@ sudo date -s "01/10/2020 13:30:00"
 
 // 	// 读取license配置文件
 // 	{
-// 		ReadLicneseFunc, err := plugin.Lookup("ReadLicnese")
+// 		ReadLicenseFunc, err := plugin.Lookup("ReadLicense")
 // 		if err != nil {
 // 			fmt.Println(err.Error())
 // 			return
 // 		}
 // 		for {
 // 			time.Sleep(time.Second * 1)
-// 			ret := ReadLicneseFunc.(func(string, string) string)(l, p)
+// 			ret := ReadLicenseFunc.(func(string, string) string)(l, p)
 // 			if ret == "FAIL" {
 // 				fmt.Println(ret)
 // 				continue

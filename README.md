@@ -174,7 +174,7 @@ license.dat文件所在的文件夹(建议创建独立存放license的文件夹)
 出参:
 成功json格式license文件内容
 失败"FALT"
-string ReadLicnese(string,string)
+string ReadLicense(string,string)
 
 5.获取过期时间(不验证签名)
 入参:
@@ -185,4 +185,16 @@ license.dat文件所在的文件夹(建议创建独立存放license的文件夹)
 -1失败
 >0 剩余时间(剩余未过期的秒数)
 int64 GetExpireSec(string,string)
+
+
+注意：
+ReadLicense和GetExpireSec接口不判断签名，如果需要验证签名，业务层写法应为：
+errCode := VerifyLicense;
+if errCode == 1 {
+    ReadLicense...
+    GetExpireSec...
+}else {
+    printf(errCode,errMsg)...＃给出验证签名失败的详细信息
+}
+
 ```

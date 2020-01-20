@@ -79,7 +79,7 @@ int main(int argc,char *argv[])
   char* (*FreeLicenseFunc)();
 
   int (*VerifyLicenseFunc)(GoString p0, GoString p1);
-  char* (*ReadLicneseFunc)(GoString p0, GoString p1);
+  char* (*ReadLicenseFunc)(GoString p0, GoString p1);
   long long int (*GetExpireSecFunc)(GoString p0, GoString p1);
 
   if(handle == NULL) {
@@ -116,9 +116,9 @@ int main(int argc,char *argv[])
 
   //读取license配置文件
   {
-    ReadLicneseFunc = dlsym(handle, "ReadLicnese");
-    char *resp = ReadLicneseFunc(licensePath, productName);
-    printf("ReadLicneseFunc %s\n", resp);
+    ReadLicenseFunc = dlsym(handle, "ReadLicense");
+    char *resp = ReadLicenseFunc(licensePath, productName);
+    printf("ReadLicenseFunc %s\n", resp);
     free(resp);
   }
 
