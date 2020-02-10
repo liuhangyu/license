@@ -55,8 +55,9 @@ func (c *License) Valid(productName string, machine string) error {
 
 	//比较过期时间
 	if c.VerifyExpiresAt(now, false) == false {
-		delta := time.Unix(now, 0).Sub(time.Unix(c.ExpiresAt, 0))
-		vErr = ErrLicenseExpired.SetErrText(fmt.Sprintf("license is expired by %v", delta))
+		// delta := time.Unix(now, 0).Sub(time.Unix(c.ExpiresAt, 0))
+		expStr := time.Unix(c.ExpiresAt, 0).Format("2006-01-02 15:04:05")
+		vErr = ErrLicenseExpired.SetErrText(fmt.Sprintf("license is expired after %s", expStr))
 	}
 
 	//比较签发时间

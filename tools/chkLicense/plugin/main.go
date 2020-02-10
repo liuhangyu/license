@@ -96,7 +96,7 @@ func main() {
 	}
 
 	//读取license配置文件
-	{
+	if false {
 		ReadLicenseFunc, err := plugin.Lookup("ReadLicense")
 		if err != nil {
 			fmt.Println(err.Error())
@@ -121,7 +121,7 @@ func main() {
 	}
 
 	//查询过期时间
-	{
+	if false {
 		GetExpireSecFunc, err := plugin.Lookup("GetExpireSec")
 		if err != nil {
 			fmt.Println(err.Error())
