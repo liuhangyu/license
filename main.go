@@ -199,7 +199,7 @@ func InputExpiresTime() (int64, error) {
 			duration := time.Duration(expiresAt) * time.Second
 
 			fmt.Println()
-			fmt.Printf("过期秒数: %d minute, 过期日期:%s \n", seconds, time.Now().Add(duration).Format("2006-01-02 15:04:05"))
+			fmt.Printf("过期秒数: %d seconds, 过期日期:%s \n", seconds, time.Now().Add(duration).Format("2006-01-02 15:04:05"))
 			fmt.Println()
 		} else {
 			return 0, fmt.Errorf("%s", "输入不正确,请输入时间单位")
