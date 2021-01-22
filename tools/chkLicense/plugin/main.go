@@ -15,9 +15,9 @@ var (
 )
 
 func init() {
-	flag.StringVar(&l, "l", "../../register/", "license.dat directory path")
-	flag.StringVar(&lib, "lib", "../../../linklib/plugin/liblicense.so", "libauth.so file path")
-	flag.StringVar(&p, "p", "switch-directory-chain", "product name ")
+	flag.StringVar(&l, "l", "../register/", "license.dat directory path")
+	flag.StringVar(&lib, "lib", "../../linklib/plugin/liblicense.so", "libauth.so file path")
+	flag.StringVar(&p, "p", "baas-backend", "product name ")
 	flag.Usage = usage
 }
 
