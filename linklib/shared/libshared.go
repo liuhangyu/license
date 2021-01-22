@@ -13,9 +13,9 @@ import (
 	"sync"
 	"time"
 
-	"code.uni-ledger.com/switch/license/public"
-	"code.uni-ledger.com/switch/license/public/deplib/fsnotify"
-	lumberjack "code.uni-ledger.com/switch/license/public/deplib/gopkg.in/natefinch/lumberjack.v2"
+	"license/public"
+	"license/public/deplib/fsnotify"
+	lumberjack "license/public/deplib/gopkg.in/natefinch/lumberjack.v2"
 )
 
 const (

@@ -1,3 +1,3 @@
-module code.uni-ledger.com/switch/license
+module license
 
 go 1.13

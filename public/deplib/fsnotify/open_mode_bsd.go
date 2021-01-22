@@ -6,5 +6,6 @@
 
 package fsnotify
 
-import 	"code.uni-ledger.com/switch/license/public/deplib/golang.org/x/sys/unix"
+import "license/public/deplib/golang.org/x/sys/unix"
+
 const openMode = unix.O_NONBLOCK | unix.O_RDONLY

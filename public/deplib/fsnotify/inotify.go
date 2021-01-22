@@ -16,7 +16,7 @@ import (
 	"sync"
 	"unsafe"
 
-	"code.uni-ledger.com/switch/license/public/deplib/golang.org/x/sys/unix"
+	"license/public/deplib/golang.org/x/sys/unix"
 )
 
 // Watcher watches a set of files, delivering events to a channel.

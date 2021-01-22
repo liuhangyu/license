@@ -3,7 +3,7 @@ package public
 import (
 	"os"
 
-	uuid "code.uni-ledger.com/switch/license/public/deplib/uuid"
+	uuid "license/public/deplib/uuid"
 )
 
 func GetUUID() string {

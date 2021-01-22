@@ -3,7 +3,7 @@ export WORKDIR=$(WORKSPACE)
 export GO111MODULE=on
 
 #version
-VERSION_DIR     := code.uni-ledger.com/switch/license/public
+VERSION_DIR     := license/public
 
 BUILD_VERSION   = $(shell git describe --abbrev=0 --tags)
 BUILD_BRANCH    := $(shell git rev-parse --abbrev-ref HEAD)

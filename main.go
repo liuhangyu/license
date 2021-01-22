@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"code.uni-ledger.com/switch/license/public"
+	"license/public"
 )
 
 const (

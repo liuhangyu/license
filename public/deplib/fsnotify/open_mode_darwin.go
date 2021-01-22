@@ -6,7 +6,7 @@
 
 package fsnotify
 
-import 	"code.uni-ledger.com/switch/license/public/deplib/golang.org/x/sys/unix"
+import "license/public/deplib/golang.org/x/sys/unix"
 
 // note: this constant is not defined on BSD
 const openMode = unix.O_EVTONLY
