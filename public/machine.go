@@ -14,8 +14,9 @@ import (
 )
 
 const (
-	FSTabCommand = "blkid"
-	FSTabFile    = "/etc/fstab"
+	FSTabCommand  = "blkid"
+	FSTab_File    = "/etc/fstab"
+	DMI_UUID_FILE = "/sys/class/dmi/id/product_uuid"
 )
 
 func CheckCmdExists(command string) (string, error) {
@@ -30,7 +31,7 @@ func CheckCmdExists(command string) (string, error) {
 	return path, nil
 }
 
-func IsExistFStab(path string) bool {
+func IsExistFile(path string) bool {
 	_, err := os.Stat(path) //os.Stat获取文件信息
 	if err != nil {
 		if os.IsExist(err) {
@@ -41,8 +42,8 @@ func IsExistFStab(path string) bool {
 	return true
 }
 
-func ReadFStabFile(filePath string) ([]byte, error) {
-	isExist := IsExistFStab(filePath)
+func ReadSysFile(filePath string) ([]byte, error) {
+	isExist := IsExistFile(filePath)
 	if isExist == false {
 		return nil, fmt.Errorf("%s file does not exist", filePath)
 	}
@@ -165,7 +166,7 @@ func GetFSInfo() ([]string, error) {
 		}
 	}
 
-	fsContent, err := ReadFStabFile(FSTabFile)
+	fsContent, err := ReadSysFile(FSTab_File)
 	if err != nil {
 		if runtime.GOOS == "darwin" || //macos,windows测试使用,不获取硬盘分区UUID
 			runtime.GOOS == "windows" {
@@ -217,6 +218,20 @@ func GetFSInfo() ([]string, error) {
 	return nil, fmt.Errorf("%s", "get system file info failed from file")
 }
 
+//获取BIOS出厂UUID
+func GetProductUUID() (string, error) {
+	if runtime.GOOS == "darwin" || //macos,windows测试使用,不获取硬盘分区UUID
+		runtime.GOOS == "windows" {
+		return "", fmt.Errorf("%s", "the operating system not support get product uuid")
+	}
+
+	fsContent, err := ReadSysFile(DMI_UUID_FILE)
+	if err != nil {
+		return "", err
+	}
+	return string(fsContent), nil
+}
+
 //获取网卡信息
 func GetHardwareAddr() ([]string, error) {
 	var (
@@ -250,26 +265,34 @@ func GetHardwareAddr() ([]string, error) {
 }
 
 /*
-GetMachineID 获取机器ID (分区UUID和网卡地址)
+GetMachineID 获取机器ID (分区UUID和网卡地址 or Product UUID)
 */
 func GetMachineID() (string, error) {
 	var (
 		MachineIDList []string
 	)
 
-	//获取磁盘分区UUID
-	fsInfoList, err := GetFSInfo()
-	if err != nil {
-		return "", err
-	}
-	MachineIDList = append(MachineIDList, fsInfoList...)
+	if false {
+		//获取磁盘分区UUID
+		fsInfoList, err := GetFSInfo()
+		if err != nil {
+			return "", err
+		}
+		MachineIDList = append(MachineIDList, fsInfoList...)
 
-	//获取网卡地址
-	hardAddrList, err := GetHardwareAddr()
-	if err != nil {
-		return "", err
+		//获取网卡地址
+		hardAddrList, err := GetHardwareAddr()
+		if err != nil {
+			return "", err
+		}
+		MachineIDList = append(MachineIDList, hardAddrList...)
+	} else {
+		productUUID, err := GetProductUUID()
+		if err != nil {
+			return "", err
+		}
+		MachineIDList = append(MachineIDList, productUUID)
 	}
-	MachineIDList = append(MachineIDList, hardAddrList...)
 
 	//编码
 	encByte, err := json.Marshal(MachineIDList)
