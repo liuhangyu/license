@@ -229,6 +229,10 @@ func GetProductUUID() (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	if len(fsContent) == 0 {
+		return "", fmt.Errorf("%s", "get product uuid is empty string")
+	}
 	return string(fsContent), nil
 }
 
