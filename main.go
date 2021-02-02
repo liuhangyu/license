@@ -50,18 +50,18 @@ var (
 	inputReader *bufio.Reader
 	products    = []*Products{
 		&Products{
-			ProductExplan: "联通BaaS后台",
-			ProductName:   "baas-backend",
+			ProductExplan: "产品1",
+			ProductName:   "product_name1",
 		},
 
 		&Products{
-			ProductExplan: "BaaS fabric engine",
-			ProductName:   "baas-fabricengine",
+			ProductExplan: "产品2",
+			ProductName:   "product_name2",
 		},
 
 		&Products{
-			ProductExplan: "BaaS API Gateway",
-			ProductName:   "baas-apigateway",
+			ProductExplan: "产品2",
+			ProductName:   "product_name3",
 		},
 	}
 )

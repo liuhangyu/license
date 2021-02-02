@@ -6,16 +6,7 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+注
+生成ES521公私秘钥方式:
+openssl ecparam -genkey -name secp521r1 -noout -out prikey.pem
+openssl ec -in prikey.pem -pubout -out pubkey.pem
