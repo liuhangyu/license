@@ -31,9 +31,9 @@ licensemgr是生成激活码程序,需要输入产品,过期时间,机器码
 "
 [
 {"ProductExplan":"新产品1","ProductName":"new-product"},
-{"ProductExplan":"目录链","ProductName":"switch-directory-chain"},
-{"ProductExplan":"数据交换平台","ProductName":"switch"},
-{"ProductExplan":"数易通","ProductName":"tusdao-shuttle"}
+{"ProductExplan":"新产品2","ProductName":"switch-directory-chain"},
+{"ProductExplan":"新产品3","ProductName":"switch"},
+{"ProductExplan":"新产品4","ProductName":"tusdao-shuttle"}
 ]
 "
 2.保存,重新运行./licensemgr 就可以看见新加的产品
