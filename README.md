@@ -102,7 +102,7 @@ license/tools/chkLicense/plugin/main.go
 linux获取so版本:
 在运行程序当前目录license.log文件中记录dll版本信息
 
-### java,C程序对接(数易通)
+### java,C程序对接
 ```
 第一步:
 进入license/tools/linklib目录
