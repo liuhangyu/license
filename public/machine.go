@@ -50,7 +50,10 @@ func ReadSysFile(filePath string) ([]byte, error) {
 
 	fd, err := os.OpenFile(filePath, os.O_RDONLY, 0644)
 	if err != nil {
-		return nil, err
+		if os.IsPermission(err) {
+			return nil, fmt.Errorf("%s", "permission denied get machine id")
+		}
+		return nil, fmt.Errorf("%s", "get machine id failed")
 	}
 	defer fd.Close()
 

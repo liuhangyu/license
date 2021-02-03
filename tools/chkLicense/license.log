@@ -1,8 +1,8 @@
-[License]2021/01/22 16:23:26.549679 libplugin.go:133: License 
+[License]2021/02/03 09:48:45.324792 libplugin.go:133: License 
 AppInfo:
 	Name: 	   license
 	Version:   
 	Branch:    master
-	CommitID:  4c8fc0e
-	BuildTime: 2021-01-22 16:22:13
+	CommitID:  69763c5
+	BuildTime: 2021-02-03 09:43:49
 

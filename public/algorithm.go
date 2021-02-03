@@ -1,6 +1,9 @@
 package public
 
-import "crypto/ecdsa"
+import (
+	"crypto/ecdsa"
+	"encoding/pem"
+)
 
 type NonEquAlgorthm struct {
 	Algorithm  *SigningMethodECDSA
@@ -15,6 +18,13 @@ func GetNonEquAlgorthm(prikey []byte, pubkey []byte) (*NonEquAlgorthm, error) {
 	}
 
 	if prikey != nil {
+		if block, _ := pem.Decode(prikey); block == nil {
+			prikey, err = FormatPem(prikey, true)
+			if err != nil {
+				return nil, err
+			}
+		}
+
 		alg.PrivateKey, err = ParseECPrivateKeyFromPEM(prikey)
 		if err != nil {
 			return nil, err
@@ -22,6 +32,13 @@ func GetNonEquAlgorthm(prikey []byte, pubkey []byte) (*NonEquAlgorthm, error) {
 	}
 
 	if pubkey != nil {
+		if block, _ := pem.Decode(pubkey); block == nil {
+			pubkey, err = FormatPem(pubkey, false)
+			if err != nil {
+				return nil, err
+			}
+		}
+
 		alg.PublicKey, err = ParseECPublicKeyFromPEM(pubkey)
 		if err != nil {
 			return nil, err

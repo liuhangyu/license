@@ -1,16 +1,19 @@
 package public
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
-import "fmt"
+var (
+	ECDSA_PUBLICKEY = ""
 
-const (
-	ECDSA_PUBLICKEY = `-----BEGIN PUBLIC KEY-----
-MIGbMBAGByqGSM49AgEGBSuBBAAjA4GGAAQACVyLsNdjFM6R4IImvTzgRWF0sWjh
-ihmzIyMgyPuqu8IuyzMNx4G2jpoCKhRu9qPCQUMGDeCG1x3/n/OgkWNQANsB82x7
-7eiIZAl0zcQRH32tcjFILvJ/XCihdoi4MkCnCqlt9/HxjsP590ZtmHfxAeertq5w
-9vakvpzjPXhkvoMt/Tk=
------END PUBLIC KEY-----`
+// 	ECDSA_PUBLICKEY = `-----BEGIN PUBLIC KEY-----
+// MIGbMBAGByqGSM49AgEGBSuBBAAjA4GGAAQACVyLsNdjFM6R4IImvTzgRWF0sWjh
+// ihmzIyMgyPuqu8IuyzMNx4G2jpoCKhRu9qPCQUMGDeCG1x3/n/OgkWNQANsB82x7
+// 7eiIZAl0zcQRH32tcjFILvJ/XCihdoi4MkCnCqlt9/HxjsP590ZtmHfxAeertq5w
+// 9vakvpzjPXhkvoMt/Tk=
+// -----END PUBLIC KEY-----`
 )
 
 func (nea *NonEquAlgorthm) VerifySign(cipherText string) ([]byte, error) {

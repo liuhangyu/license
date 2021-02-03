@@ -17,7 +17,7 @@ var (
 func init() {
 	flag.StringVar(&l, "l", "../register/", "license.dat directory path")
 	flag.StringVar(&lib, "lib", "../../linklib/plugin/liblicense.so", "libauth.so file path")
-	flag.StringVar(&p, "p", "baas-backend", "product name ")
+	flag.StringVar(&p, "p", "product_name1", "product name ")
 	flag.Usage = usage
 }
 

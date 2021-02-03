@@ -109,3 +109,12 @@ func ReadLicensePem(filePath string) ([]byte, error) {
 
 	return licenseBytes, nil
 }
+
+func LoadKey(pemFile string) ([]byte, error) {
+	context, err := ioutil.ReadFile(pemFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read key file: %s, error: %s", pemFile, err)
+	}
+
+	return context, nil
+}

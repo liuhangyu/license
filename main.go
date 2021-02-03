@@ -33,6 +33,7 @@ var (
 		ProductName: true,
 		EndTime:     true,
 	}
+	PriKeyFilePath = ""
 )
 
 type Products struct {
@@ -403,11 +404,13 @@ func IsQuit() bool {
 }
 
 func init() {
+	flag.StringVar(&PriKeyFilePath, "prikey", "", "prikey.pem file path")
 	flag.Usage = usage
 }
 
 func usage() {
 	fmt.Println("input 'quit' or 'q' to exit the program")
+	fmt.Println("input '-prikey' set prikey.pem file path,for example -prikey=keys/v1/prikey.pem")
 	fmt.Println(public.GetAppInfo())
 }
 
@@ -536,10 +539,23 @@ func main() {
 		break
 	}
 
-	alg, err := public.GetNonEquAlgorthm([]byte(public.ECDSA_PRIVATE), []byte(public.ECDSA_PUBLICKEY))
-	if err != nil {
-		fmt.Println(err.Error())
-		return
+	// alg, err := public.GetNonEquAlgorthm([]byte(public.ECDSA_PRIVATE), []byte(public.ECDSA_PUBLICKEY))
+	var (
+		alg *public.NonEquAlgorthm
+	)
+	if PriKeyFilePath == "" {
+		alg, err = public.GetNonEquAlgorthm([]byte(public.ECDSA_PRIVATE), []byte(public.ECDSA_PUBLICKEY))
+	} else {
+		priBytes, err := public.LoadKey(PriKeyFilePath)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+		alg, err = public.GetNonEquAlgorthm(priBytes, nil)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
 	}
 
 	duration := time.Duration(expiresAt) * time.Second

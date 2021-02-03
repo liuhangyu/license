@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"math/big"
 	"strings"
 )
@@ -105,6 +106,7 @@ func (m *SigningMethodECDSA) Sign(signingString string, key interface{}) (string
 		curveBits := ecdsaKey.Curve.Params().BitSize
 
 		if m.CurveBits != curveBits {
+			fmt.Println(m.CurveBits, curveBits)
 			return "", ErrInvalidKey
 		}
 
